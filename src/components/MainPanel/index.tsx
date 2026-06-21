@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LogOut } from 'lucide-react';
 import { useGameStore } from '../../store/gameStore';
 import { Howler } from '../../lib/audio';
 
@@ -15,7 +16,7 @@ interface MainPanelProps {
 }
 
 export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
-  const { isStarted, mode, gameOver, failSpell, correctCount, difficulty, comboId, currentComboSize } = useGameStore();
+  const { isStarted, mode, gameOver, failSpell, correctCount, difficulty, comboId, currentComboSize, endGame } = useGameStore();
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [showDifficultySelect, setShowDifficultySelect] = useState<boolean>(false);
 
@@ -85,6 +86,19 @@ export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
 
           <OrbTrackerDisplay />
           <ActionBar />
+
+          {!gameOver && (
+            <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 z-10">
+              <button
+                onClick={endGame}
+                className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-red-900/30 hover:bg-red-900/50 border border-red-900/50 rounded-lg text-red-400 hover:text-red-300 transition-colors shadow-lg"
+                title="Quit Game"
+              >
+                <LogOut size={18} />
+                <span className="text-sm sm:text-base font-medium tracking-wider">Quit Game</span>
+              </button>
+            </div>
+          )}
 
           {gameOver && <GameOver />}
         </>

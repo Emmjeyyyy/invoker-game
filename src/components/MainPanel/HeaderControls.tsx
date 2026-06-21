@@ -1,6 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, RotateCcw } from 'lucide-react';
-import { useGameStore } from '../../store/gameStore';
+import { Volume2, VolumeX } from 'lucide-react';
 
 interface HeaderControlsProps {
   onOpenSettings: () => void;
@@ -9,19 +8,9 @@ interface HeaderControlsProps {
 }
 
 export const HeaderControls: React.FC<HeaderControlsProps> = ({ onOpenSettings, isMuted, toggleMute }) => {
-  const { isStarted, endGame } = useGameStore();
 
   return (
     <div className="absolute top-2 sm:top-4 right-2 sm:right-4 flex items-center gap-2 sm:gap-3 z-10 bg-panel/80 p-2 rounded-xl backdrop-blur-sm">
-      {isStarted && (
-        <button
-          onClick={endGame}
-          className="text-textMuted hover:text-white transition-colors focus:outline-none"
-          title="Restart Game"
-        >
-          <RotateCcw size={20} />
-        </button>
-      )}
       <button
         onClick={toggleMute}
         className="text-textMuted hover:text-white transition-colors focus:outline-none"

@@ -43,7 +43,7 @@ export const SpellsPanel: React.FC = () => {
               </div>
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left lg:w-32 xl:w-40 2xl:w-48">
                 <span className="text-[10px] sm:text-xs lg:text-sm xl:text-lg 2xl:text-xl font-sans text-white group-hover:text-textGold transition-colors leading-tight whitespace-nowrap">{spell.name}</span>
-                <div className="flex gap-0.5 lg:gap-1.5 xl:gap-2 2xl:gap-3 mt-0.5 xl:mt-1 2xl:mt-1.5 text-[9px] sm:text-[10px] lg:text-xs xl:text-sm 2xl:text-base font-sans tracking-widest">
+                <div className="flex gap-0.5 lg:gap-1.5 xl:gap-2 2xl:gap-3 mt-0.5 xl:mt-1 2xl:mt-1.5 text-[9px] sm:text-[10px] lg:text-xs xl:text-sm 2xl:text-base font-sans font-bold tracking-widest">
                   {spell.combination.map((orb, i) => (
                     <span key={i} className={`
                     ${orb === 'Q' ? 'text-quas' : ''}
