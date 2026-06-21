@@ -2,12 +2,12 @@ import React from 'react';
 
 export const ControlsPanel: React.FC = () => {
   const controls = [
-    { key: 'Q', name: 'Quas', color: 'text-quas', bg: 'bg-quas/20' },
-    { key: 'W', name: 'Wex', color: 'text-wex', bg: 'bg-wex/20' },
-    { key: 'E', name: 'Exort', color: 'text-exort', bg: 'bg-exort/20' },
-    { key: 'D', name: 'Spell 1', color: 'text-gray-400', bg: 'bg-gray-800' },
-    { key: 'F', name: 'Spell 2', color: 'text-gray-400', bg: 'bg-gray-800' },
-    { key: 'R', name: 'Invoke', color: 'text-textGold', bg: 'bg-textGold/20' },
+    { key: 'Q', name: 'Quas', color: 'text-quas', img: '/asset/icons/QWE/normal orbs/invoker_quas.png' },
+    { key: 'W', name: 'Wex', color: 'text-wex', img: '/asset/icons/QWE/normal orbs/invoker_wex.png' },
+    { key: 'E', name: 'Exort', color: 'text-exort', img: '/asset/icons/QWE/normal orbs/invoker_exort.png' },
+    { key: 'D', name: 'Spell 1', color: 'text-gray-400', img: '/asset/icons/invoke skills/default skills/no-spell.png' },
+    { key: 'F', name: 'Spell 2', color: 'text-gray-400', img: '/asset/icons/invoke skills/default skills/no-spell.png' },
+    { key: 'R', name: 'Invoke', color: 'text-textGold', img: '/asset/icons/QWE/Invoke_icon.png' },
   ];
 
   return (
@@ -19,8 +19,8 @@ export const ControlsPanel: React.FC = () => {
       <div className="flex flex-col gap-6 flex-1">
         {controls.map((ctrl) => (
           <div key={ctrl.key} className="flex items-center gap-4">
-            <div className={`w-12 h-12 rounded flex items-center justify-center font-sans font-bold text-xl border border-panelBorder ${ctrl.bg} ${ctrl.color}`}>
-              {ctrl.key}
+            <div className="w-12 h-12 border border-panelBorder bg-black relative shadow-lg rounded overflow-hidden">
+              <img src={ctrl.img} alt={ctrl.name} className="w-full h-full object-cover" />
             </div>
             <div className="text-sm font-sans tracking-wide">
               <span className="text-textMuted mr-2">{ctrl.key} —</span> 

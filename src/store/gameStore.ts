@@ -9,6 +9,8 @@ type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced' | 'Pro';
 interface GameState {
   currentOrbs: Orb[];
   targetSpell: Spell | null;
+  slotD: Spell | null;
+  slotF: Spell | null;
   mode: GameMode;
   difficulty: Difficulty;
   isStarted: boolean;
@@ -22,7 +24,8 @@ interface GameState {
   
   // Actions
   addOrb: (orb: Orb) => void;
-  invoke: () => { success: boolean, invokedSpell: Spell | null, time: number };
+  invoke: () => void;
+  cast: (slot: 'D' | 'F') => { success: boolean, castedSpell: Spell | null, time: number };
   startGame: (mode: GameMode, difficulty: Difficulty) => void;
   endGame: () => void;
   resetOrbs: () => void;
@@ -33,7 +36,9 @@ export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
       currentOrbs: [],
-      targetSpell: null,
+      targetSpell: getRandomSpell(),
+      slotD: null,
+      slotF: null,
       mode: 'Classic',
       difficulty: 'Beginner',
       isStarted: false,
@@ -53,23 +58,50 @@ export const useGameStore = create<GameState>()(
   }),
   
   invoke: () => {
-    const { currentOrbs, targetSpell } = get();
-    if (!targetSpell) return { success: false, invokedSpell: null, time: 0 };
+    const { currentOrbs, slotD, slotF } = get();
+    if (currentOrbs.length < 3) return; // Need 3 orbs to invoke
     
     const invokedId = getCombinationId(currentOrbs);
     const invokedSpell = SPELLS.find(s => s.id === invokedId) || null;
     
-    const isCorrect = invokedId === targetSpell.id;
-    const timeTaken = 0; // Will be calculated based on timestamp from component
+    if (invokedSpell) {
+      set((state) => {
+        if (state.slotD?.id === invokedSpell.id) {
+          return {};
+        } else if (state.slotF?.id === invokedSpell.id) {
+          return { slotD: state.slotF, slotF: state.slotD };
+        } else {
+          return { slotD: invokedSpell, slotF: state.slotD };
+        }
+      });
+    }
+  },
 
-    set((state) => ({
-      correctCount: isCorrect ? state.correctCount + 1 : state.correctCount,
-      incorrectCount: !isCorrect ? state.incorrectCount + 1 : state.incorrectCount,
-      streak: isCorrect ? state.streak + 1 : 0,
-      targetSpell: isCorrect ? getRandomSpell(targetSpell.name) : state.targetSpell,
-    }));
+  cast: (slot) => {
+    const { slotD, slotF, targetSpell, isStarted } = get();
+    if (!targetSpell) return { success: false, castedSpell: null, time: 0 };
+    
+    const castedSpell = slot === 'D' ? slotD : slotF;
+    if (!castedSpell) return { success: false, castedSpell: null, time: 0 };
+    
+    const isCorrect = castedSpell.id === targetSpell.id;
+    const timeTaken = 0; // Placeholder for actual time calculation
 
-    return { success: isCorrect, invokedSpell, time: timeTaken };
+    if (isStarted) {
+      set((state) => ({
+        correctCount: isCorrect ? state.correctCount + 1 : state.correctCount,
+        incorrectCount: !isCorrect ? state.incorrectCount + 1 : state.incorrectCount,
+        streak: isCorrect ? state.streak + 1 : 0,
+        targetSpell: isCorrect ? getRandomSpell(targetSpell.name) : state.targetSpell,
+      }));
+    } else if (isCorrect) {
+      // In practice mode, just load the next spell if they get it right, no stats
+      set((state) => ({
+        targetSpell: getRandomSpell(targetSpell.name),
+      }));
+    }
+
+    return { success: isCorrect, castedSpell, time: timeTaken };
   },
   
   startGame: (mode, difficulty) => set({
@@ -78,13 +110,15 @@ export const useGameStore = create<GameState>()(
     difficulty,
     targetSpell: getRandomSpell(),
     currentOrbs: [],
+    slotD: null,
+    slotF: null,
     correctCount: 0,
     incorrectCount: 0,
     streak: 0,
     timeRemaining: mode === 'Timed' ? 60 : 0,
   }),
   
-  endGame: () => set({ isStarted: false, targetSpell: null, currentOrbs: [] }),
+  endGame: () => set({ isStarted: false, targetSpell: null, currentOrbs: [], slotD: null, slotF: null }),
   resetOrbs: () => set({ currentOrbs: [] }),
   setTargetSpell: (spell) => set({ targetSpell: spell }),
 }),
