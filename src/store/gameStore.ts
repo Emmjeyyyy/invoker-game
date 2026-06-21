@@ -6,6 +6,17 @@ import { SPELLS, getCombinationId, getRandomSpell } from '../lib/constants';
 type GameMode = 'Classic' | 'Timed' | 'Endless' | 'Practice';
 type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced' | 'Pro';
 
+export type Keybinds = {
+  Q: string;
+  W: string;
+  E: string;
+  D: string;
+  F: string;
+  R: string;
+};
+
+export const defaultKeybinds: Keybinds = { Q: 'q', W: 'w', E: 'e', D: 'd', F: 'f', R: 'r' };
+
 interface GameState {
   currentOrbs: Orb[];
   targetSpell: Spell | null;
@@ -14,6 +25,8 @@ interface GameState {
   mode: GameMode;
   difficulty: Difficulty;
   isStarted: boolean;
+  keybinds: Keybinds;
+  volume: number;
   
   // Stats for the current session
   correctCount: number;
@@ -30,6 +43,10 @@ interface GameState {
   endGame: () => void;
   resetOrbs: () => void;
   setTargetSpell: (spell: Spell) => void;
+  setKeybind: (key: keyof Keybinds, value: string) => void;
+  setKeybinds: (newKeybinds: Keybinds) => void;
+  resetKeybinds: () => void;
+  setVolume: (volume: number) => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -42,6 +59,8 @@ export const useGameStore = create<GameState>()(
       mode: 'Classic',
       difficulty: 'Beginner',
       isStarted: false,
+      keybinds: defaultKeybinds,
+      volume: 0.5,
       
       correctCount: 0,
       incorrectCount: 0,
@@ -121,12 +140,18 @@ export const useGameStore = create<GameState>()(
   endGame: () => set({ isStarted: false, targetSpell: null, currentOrbs: [], slotD: null, slotF: null }),
   resetOrbs: () => set({ currentOrbs: [] }),
   setTargetSpell: (spell) => set({ targetSpell: spell }),
+  setKeybind: (key, value) => set((state) => ({ keybinds: { ...state.keybinds, [key]: value } })),
+  setKeybinds: (newKeybinds) => set({ keybinds: newKeybinds }),
+  resetKeybinds: () => set({ keybinds: defaultKeybinds }),
+  setVolume: (volume) => set({ volume }),
 }),
 {
   name: 'invoker-game-storage',
   partialize: (state) => ({ 
     correctCount: state.correctCount, 
     incorrectCount: state.incorrectCount,
-    streak: state.streak 
+    streak: state.streak,
+    keybinds: state.keybinds,
+    volume: state.volume
   })
 }));
