@@ -2,6 +2,15 @@ import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
+export const getOrbGlow = (orb: 'Q' | 'W' | 'E') => {
+  switch (orb) {
+    case 'Q': return '0 0 12px rgba(0, 191, 255, 0.5)';
+    case 'W': return '0 0 12px rgba(218, 112, 214, 0.5)';
+    case 'E': return '0 0 12px rgba(255, 140, 0, 0.5)';
+    default: return undefined;
+  }
+};
+
 export const OrbTracker: React.FC = () => {
   const currentOrbs = useGameStore(state => state.currentOrbs);
 
@@ -21,8 +30,16 @@ export const OrbTracker: React.FC = () => {
   return (
     <div className="flex gap-4 my-8">
       {displayOrbs.map((orb, idx) => (
-        <div key={idx} className="w-16 h-16 rounded-full bg-surfaceHighlight flex items-center justify-center relative overflow-hidden border border-gray-700">
-          <AnimatePresence mode="popLayout">
+        <div 
+          key={idx} 
+          className="w-16 h-16 rounded-full bg-surfaceHighlight flex items-center justify-center relative border transition-all duration-300"
+          style={{ 
+            boxShadow: (orb === 'Q' || orb === 'W' || orb === 'E') ? getOrbGlow(orb) : undefined,
+            borderColor: orb === 'Q' ? 'rgba(0,191,255,0.4)' : orb === 'W' ? 'rgba(218,112,214,0.4)' : orb === 'E' ? 'rgba(255,140,0,0.4)' : 'rgba(75,85,99,0.5)'
+          }}
+        >
+          <div className="absolute inset-0 overflow-hidden rounded-full">
+            <AnimatePresence mode="popLayout">
             {orb && (
               <motion.div
                 key={`${orb}-${idx}-${Date.now()}`} // force re-animation if needed, or better id
@@ -33,6 +50,7 @@ export const OrbTracker: React.FC = () => {
               />
             )}
           </AnimatePresence>
+          </div>
         </div>
       ))}
     </div>

@@ -5,11 +5,13 @@ import { MainPanel } from './components/MainPanel';
 import { SpellsPanel } from './components/SpellsPanel';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useGameStore } from './store/gameStore';
-import { playSound, Howler } from './lib/audio';
+import { playSound, playClick, Howler } from './lib/audio';
 
 function App() {
-  const { addOrb, invoke, cast, isStarted, startGame, keybinds, volume } = useGameStore();
+  const { addOrb, invoke, cast, isStarted, gameOver, startGame, keybinds, volume } = useGameStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  
+  const isGameActive = isStarted && !gameOver && !isSettingsOpen;
 
   useEffect(() => {
     Howler.volume(volume);
@@ -30,17 +32,17 @@ function App() {
     }
   };
 
-  useHotkeys(keybinds.Q, () => handleOrb('Q'), { enabled: !isSettingsOpen }, [isStarted, addOrb, keybinds.Q, isSettingsOpen]);
-  useHotkeys(keybinds.W, () => handleOrb('W'), { enabled: !isSettingsOpen }, [isStarted, addOrb, keybinds.W, isSettingsOpen]);
-  useHotkeys(keybinds.E, () => handleOrb('E'), { enabled: !isSettingsOpen }, [isStarted, addOrb, keybinds.E, isSettingsOpen]);
+  useHotkeys(keybinds.Q, () => handleOrb('Q'), { enabled: isGameActive }, [isGameActive, addOrb, keybinds.Q]);
+  useHotkeys(keybinds.W, () => handleOrb('W'), { enabled: isGameActive }, [isGameActive, addOrb, keybinds.W]);
+  useHotkeys(keybinds.E, () => handleOrb('E'), { enabled: isGameActive }, [isGameActive, addOrb, keybinds.E]);
   
-  useHotkeys(keybinds.D, () => handleCast('D'), { enabled: !isSettingsOpen }, [isStarted, cast, keybinds.D, isSettingsOpen]);
-  useHotkeys(keybinds.F, () => handleCast('F'), { enabled: !isSettingsOpen }, [isStarted, cast, keybinds.F, isSettingsOpen]);
+  useHotkeys(keybinds.D, () => handleCast('D'), { enabled: isGameActive }, [isGameActive, cast, keybinds.D]);
+  useHotkeys(keybinds.F, () => handleCast('F'), { enabled: isGameActive }, [isGameActive, cast, keybinds.F]);
   
   useHotkeys(keybinds.R, () => {
     playSound('invoke');
     invoke();
-  }, { enabled: !isSettingsOpen }, [isStarted, invoke, keybinds.R, isSettingsOpen]);
+  }, { enabled: isGameActive }, [isGameActive, invoke, keybinds.R]);
 
   return (
     <Layout>
