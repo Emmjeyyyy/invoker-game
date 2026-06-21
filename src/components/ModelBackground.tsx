@@ -68,8 +68,12 @@ function Model() {
       
       // Wait for the UI entrance animations (1.2s) before rising up
       if (timeRef.current > 1.2) {
-        // Smooth lerp factor for a majestic entrance
-        groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetY, delta * 2.0);
+        // Smooth lerp factor for a majestic entrance, clamped to 1 to prevent alt-tab overshooting
+        groupRef.current.position.y = THREE.MathUtils.lerp(
+          groupRef.current.position.y, 
+          targetY, 
+          Math.min(delta * 2.0, 1)
+        );
       }
     }
   });
