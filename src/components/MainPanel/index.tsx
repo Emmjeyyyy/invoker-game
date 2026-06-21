@@ -49,19 +49,17 @@ export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
       setTimer(maxTime);
       const interval = setInterval(() => {
         setTimer((prev) => {
-          if (prev <= 50) return 0;
+          if (prev <= 50) {
+            clearInterval(interval);
+            failSpell();
+            return 0;
+          }
           return prev - 50;
         });
       }, 50);
       return () => clearInterval(interval);
     }
-  }, [isStarted, mode, gameOver, comboId, maxTime]);
-
-  useEffect(() => {
-    if (timer === 0 && isStarted && mode === 'Challenge' && !gameOver) {
-      failSpell();
-    }
-  }, [timer, isStarted, mode, gameOver, failSpell]);
+  }, [isStarted, mode, gameOver, comboId, maxTime, failSpell]);
 
   const toggleMute = () => {
     const nextMuted = !isMuted;

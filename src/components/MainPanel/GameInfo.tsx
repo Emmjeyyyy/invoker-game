@@ -14,7 +14,7 @@ export const GameInfo: React.FC = () => {
             key={i}
             src="/asset/icons/Invoker_minimap_icon.webp"
             alt="Life"
-            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-panelBorder transition-all duration-300 ${i < lives ? 'opacity-100 shadow-[0_0_8px_rgba(255,0,0,0.5)]' : 'opacity-20 grayscale brightness-50'}`}
+            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-panelBorder transition-all duration-300 ${i < lives ? 'opacity-100 shadow-[0_0_4px_rgba(250,204,21,0.6)]' : 'opacity-20 grayscale brightness-50'}`}
           />
         ))}
       </div>
