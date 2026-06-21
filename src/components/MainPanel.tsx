@@ -15,8 +15,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
   // Base timer per spell decreases by 150ms every 10 points
   const baseTimePerSpell = Math.max(1000, 3000 - Math.floor(correctCount / 10) * 150);
   
-  // Total time for the combo. Give a 15% bonus time for combos of 2 or 3 spells.
-  const maxTime = Math.floor(baseTimePerSpell * currentComboSize * (currentComboSize > 1 ? 1.15 : 1));
+  // Total time for the combo. Multi-spell combos get a slightly tighter timer to maintain the challenge.
+  const maxTime = Math.floor(baseTimePerSpell * currentComboSize * (currentComboSize > 1 ? 0.9 : 1));
   
   const [timer, setTimer] = useState(maxTime);
 
