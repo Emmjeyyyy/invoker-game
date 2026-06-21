@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Victory Striker Sans Demo';
+  src: url('/fonts/victory-striker-sans-demo/Victory Striker Sans Demo.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @theme {
   --color-background: #09090b;
   --color-panel: #18181b;
@@ -11,6 +18,7 @@
   --color-exort: #ff8c00;
   --font-serif: Reaver, serif;
   --font-sans: Radiance, sans-serif;
+  --font-victory: 'Victory Striker Sans Demo', sans-serif;
 }
 
 @layer base {

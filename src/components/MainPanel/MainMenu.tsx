@@ -11,7 +11,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({ showDifficultySelect, setSho
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full flex-1 mt-8">
-      <h1 className="text-5xl lg:text-7xl font-serif text-textGold mb-12 tracking-widest text-shadow-glow">INVOKER GAME</h1>
+      {!showDifficultySelect && (
+        <h1 className="text-5xl lg:text-7xl font-victory text-textGold mb-12 tracking-widest text-shadow-glow">
+          INVOKER GAME
+        </h1>
+      )}
       {!showDifficultySelect ? (
         <div className="flex flex-col gap-6 w-full max-w-md">
           <button
