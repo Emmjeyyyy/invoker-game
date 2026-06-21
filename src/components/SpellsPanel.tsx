@@ -1,14 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SPELLS } from '../lib/constants';
+import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 
 export const SpellsPanel: React.FC = () => {
-  return (
-    <div className="flex flex-col lg:h-full bg-panel border border-panelBorder rounded-xl p-2 sm:p-3 lg:p-6 2xl:p-8 shadow-2xl overflow-hidden shrink-0 lg:shrink">
-      <h2 className="hidden lg:block text-center text-sm lg:text-base 2xl:text-xl tracking-[0.2em] uppercase font-bold text-textGold mb-4 lg:mb-6 2xl:mb-8 shrink-0">
-        Spells
-      </h2>
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
-      <div className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-hidden pb-2 lg:pb-0 pr-0 lg:pr-2 2xl:pr-4 gap-2 lg:gap-1 lg:justify-between lg:flex-1 custom-scrollbar items-start lg:items-stretch">
+  return (
+    <div className={`flex flex-col bg-panel border border-panelBorder rounded-xl shadow-2xl overflow-hidden shrink-0 transition-all duration-300 relative ${
+      isCollapsed 
+        ? 'p-2 sm:p-3 lg:w-16 lg:h-full items-center justify-center' 
+        : 'p-2 sm:p-3 lg:p-6 2xl:p-8 lg:w-[280px] xl:w-[300px] lg:h-full'
+    }`}>
+      
+      {/* Toggle Button */}
+      <button 
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className={`z-10 p-1.5 rounded-lg hover:bg-panelBorder/50 text-textMuted hover:text-white transition-colors ${
+          isCollapsed ? '' : 'absolute right-2 top-2 lg:right-4 lg:top-4 2xl:top-6'
+        }`}
+        title={isCollapsed ? "Expand Spells" : "Collapse Spells"}
+      >
+        {isCollapsed ? <BookOpen size={20} className="text-textGold" /> : <ChevronLeft size={20} className="hidden lg:block" />}
+        {!isCollapsed && <ChevronLeft size={20} className="lg:hidden rotate-90" />} 
+      </button>
+
+      {!isCollapsed && (
+        <>
+          <h2 className="hidden lg:block text-center text-sm lg:text-base 2xl:text-xl tracking-[0.2em] uppercase font-bold text-textGold mb-4 lg:mb-6 2xl:mb-8 shrink-0">
+            Spells
+          </h2>
+
+          <div className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-hidden pb-2 lg:pb-0 pr-0 lg:pr-2 2xl:pr-4 gap-2 lg:gap-1 lg:justify-between lg:flex-1 custom-scrollbar items-start lg:items-stretch mt-8 lg:mt-0">
         {SPELLS.map((spell) => {
           const isGradientSpell = spell.name === 'Deafening Blast' || spell.name === 'Tornado' || spell.name === 'Ghost Walk';
           const gradientBg = spell.name === 'Deafening Blast'
@@ -20,7 +42,7 @@ export const SpellsPanel: React.FC = () => {
                 : undefined;
 
           return (
-            <div key={spell.id} className="flex flex-col lg:flex-row items-center lg:justify-center gap-1 lg:gap-4 xl:gap-6 2xl:gap-8 group cursor-pointer hover:bg-panelBorder/30 p-2 lg:py-1 lg:px-2 xl:py-1.5 xl:px-3 2xl:py-2 2xl:px-4 rounded transition-colors min-w-[70px] lg:min-w-0 shrink-0 lg:flex-1 lg:min-h-0">
+            <div key={spell.id} className="flex flex-col lg:flex-row items-center lg:justify-center gap-1 lg:gap-4 xl:gap-6 2xl:gap-8 p-2 lg:py-1 lg:px-2 xl:py-1.5 xl:px-3 2xl:py-2 2xl:px-4 rounded min-w-[70px] lg:min-w-0 shrink-0 lg:flex-1 lg:min-h-0">
               <div className="relative flex items-center justify-center shrink-0 w-10 h-10 lg:w-auto lg:h-full lg:max-h-[64px] 2xl:max-h-[80px] lg:aspect-square">
                 {isGradientSpell && (
                   <div
@@ -42,7 +64,7 @@ export const SpellsPanel: React.FC = () => {
                 </div>
               </div>
               <div className="flex flex-col items-center lg:items-start text-center lg:text-left lg:w-32 xl:w-40 2xl:w-48">
-                <span className="text-[10px] sm:text-xs lg:text-sm xl:text-lg 2xl:text-xl font-sans text-white group-hover:text-textGold transition-colors leading-tight whitespace-nowrap">{spell.name}</span>
+                <span className="text-[10px] sm:text-xs lg:text-sm xl:text-lg 2xl:text-xl font-sans text-white leading-tight whitespace-nowrap">{spell.name}</span>
                 <div className="flex gap-0.5 lg:gap-1.5 xl:gap-2 2xl:gap-3 mt-0.5 xl:mt-1 2xl:mt-1.5 text-[9px] sm:text-[10px] lg:text-xs xl:text-sm 2xl:text-base font-sans font-bold tracking-widest">
                   {spell.combination.map((orb, i) => (
                     <span key={i} className={`
@@ -56,8 +78,9 @@ export const SpellsPanel: React.FC = () => {
             </div>
           );
         })}
-      </div>
-
+          </div>
+        </>
+      )}
     </div>
   );
 };

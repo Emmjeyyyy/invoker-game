@@ -34,6 +34,6 @@
 
 @layer utilities {
   .text-shadow-glow {
-    text-shadow: 0 0 10px rgba(232, 211, 184, 0.3);
+    text-shadow: 0 0 6px rgba(232, 211, 184, 0.15);
   }
 }

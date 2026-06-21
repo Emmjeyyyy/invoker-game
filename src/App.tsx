@@ -47,7 +47,7 @@ function App() {
   return (
     <Layout>
       <SpellsPanel />
-      <div className="relative h-full flex flex-col justify-center">
+      <div className="relative h-full flex-1 flex flex-col justify-center min-w-0">
         <MainPanel onOpenSettings={() => setIsSettingsOpen(true)} />
       </div>
       {isSettingsOpen && <SettingsPanel onClose={() => setIsSettingsOpen(false)} />}

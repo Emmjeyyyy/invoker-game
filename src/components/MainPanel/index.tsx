@@ -10,6 +10,7 @@ import { GameInfo } from './GameInfo';
 import { ActiveSpellChallenge } from './ActiveSpellChallenge';
 import { OrbTrackerDisplay } from './OrbTrackerDisplay';
 import { ActionBar } from './ActionBar';
+import { ModelBackground } from '../ModelBackground';
 
 interface MainPanelProps {
   onOpenSettings: () => void;
@@ -69,7 +70,8 @@ export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 justify-center bg-panel border border-panelBorder rounded-xl p-4 sm:p-8 shadow-2xl items-center relative w-full overflow-y-auto custom-scrollbar">
+    <div className={`flex flex-col flex-1 min-h-0 justify-center border border-panelBorder rounded-xl p-4 sm:p-8 shadow-2xl items-center relative isolate w-full overflow-y-auto custom-scrollbar ${(!isStarted && !gameOver) ? 'bg-transparent' : 'bg-panel'}`}>
+      {(!isStarted && !gameOver) && <ModelBackground />}
       <HeaderControls onOpenSettings={onOpenSettings} isMuted={isMuted} toggleMute={toggleMute} />
       
       {!isStarted && !gameOver ? (
