@@ -9,15 +9,16 @@
   --color-quas: #4facfe;
   --color-wex: #d53e90;
   --color-exort: #ff8c00;
-  --font-serif: Georgia, "Times New Roman", serif;
-  --font-sans: Inter, sans-serif;
+  --font-serif: Reaver, serif;
+  --font-sans: Radiance, sans-serif;
 }
 
 @layer base {
   body {
     background-color: var(--color-background);
     color: var(--color-textGold);
-    font-family: var(--font-serif);
+    font-family: var(--font-sans);
+    font-weight: 400;
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
   }

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGameStore, defaultKeybinds } from '../store/gameStore';
 import type { Keybinds } from '../store/gameStore';
+import { playSound, Howler } from '../lib/audio';
 
 interface SettingsPanelProps {
   onClose: () => void;
@@ -12,6 +13,19 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
   const [pendingKeybind, setPendingKeybind] = useState<string | null>(null);
   const [localKeybinds, setLocalKeybinds] = useState<Keybinds>(keybinds);
   const [localVolume, setLocalVolume] = useState<number>(volume);
+  
+  // Keep track of the real global volume to revert to if cancelled
+  const globalVolumeRef = useRef(volume);
+  useEffect(() => {
+    globalVolumeRef.current = volume;
+  }, [volume]);
+
+  useEffect(() => {
+    return () => {
+      // Always ensure Howler's volume matches the real global volume when unmounting
+      Howler.volume(globalVolumeRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!listeningFor) {
@@ -44,11 +58,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div 
-        className="flex flex-col w-[650px] max-w-[95vw] bg-panel border border-panelBorder rounded-xl p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200"
+        className="flex flex-col w-[650px] max-w-[95vw] max-h-[95dvh] bg-panel border border-panelBorder rounded-xl p-4 sm:p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 overflow-y-auto custom-scrollbar"
         onClick={e => e.stopPropagation()}
       >
         <div className="relative mb-8 mt-2 flex items-center justify-center w-full">
-          <h2 className="text-sm tracking-[0.2em] uppercase font-bold text-textGold">
+          <h2 className="text-sm tracking-[0.2em] uppercase font-bold font-serif text-textGold">
             Settings
           </h2>
           <div className="absolute right-0 flex items-center gap-3">
@@ -64,11 +78,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
           </div>
         </div>
         
-        <div className="flex flex-row justify-center gap-4 flex-1">
+        <div className="flex flex-row flex-wrap justify-center gap-2 sm:gap-4 flex-1">
           {controls.map((ctrl) => (
             <div 
               key={ctrl.key} 
-              className="flex flex-col items-center gap-3 transition-all duration-200 cursor-pointer hover:bg-white/5 p-3 rounded-lg"
+              className="flex flex-col items-center gap-2 sm:gap-3 transition-all duration-200 cursor-pointer hover:bg-white/5 p-2 sm:p-3 rounded-lg"
               onClick={() => setListeningFor(ctrl.key)}
             >
               <div className="w-14 h-14 border border-panelBorder bg-black relative shadow-lg rounded overflow-hidden hover:ring-2 hover:ring-textGold hover:ring-offset-2 hover:ring-offset-panel transition-all">
@@ -94,7 +108,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
               type="range" 
               min="0" max="1" step="0.05" 
               value={localVolume} 
-              onChange={(e) => setLocalVolume(parseFloat(e.target.value))}
+              onChange={(e) => {
+                const newVol = parseFloat(e.target.value);
+                setLocalVolume(newVol);
+                Howler.volume(newVol);
+              }}
+              onPointerUp={() => playSound('invoke')}
+              onKeyUp={() => playSound('invoke')}
               className="w-full h-1 bg-black rounded-lg appearance-none cursor-pointer accent-textGold"
             />
           </div>
@@ -160,8 +180,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="bg-panel border border-textGold rounded-xl p-8 flex flex-col items-center shadow-[0_0_50px_rgba(255,215,0,0.15)] animate-in fade-in zoom-in duration-200 min-w-[300px]">
-              <h3 className="text-2xl text-white mb-2">Bind Key</h3>
-              <p className="text-textMuted mb-6">for <span className="text-textGold font-bold">{targetCtrl?.name}</span></p>
+              <h3 className="text-2xl text-white mb-2 font-serif font-bold tracking-wide">Bind Key</h3>
+              <p className="text-textMuted mb-6">for <span className="text-textGold font-bold font-serif">{targetCtrl?.name}</span></p>
               
               <div className={`w-16 h-16 flex items-center justify-center border-2 rounded mb-4 text-2xl font-bold uppercase transition-colors ${pendingKeybind ? (hasConflict ? 'border-red-500 text-red-500' : 'border-textGold text-textGold') : 'border-panelBorder text-textMuted bg-black/50'}`}>
                 {pendingKeybind || '?'}

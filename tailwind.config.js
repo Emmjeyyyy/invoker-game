@@ -17,8 +17,12 @@ export default {
         exort: '#ef4444',
       },
       fontFamily: {
-        serif: ['Georgia', 'Times New Roman', 'serif'],
-        sans: ['Inter', 'sans-serif'],
+        serif: ['Reaver', 'serif'],
+        sans: ['Radiance', 'sans-serif'],
+      },
+      fontWeight: {
+        normal: '400',
+        bold: '700',
       },
     },
   },

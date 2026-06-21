@@ -137,7 +137,7 @@ export const useGameStore = create<GameState>()(
     timeRemaining: mode === 'Timed' ? 60 : 0,
   }),
   
-  endGame: () => set({ isStarted: false, targetSpell: null, currentOrbs: [], slotD: null, slotF: null }),
+  endGame: () => set({ isStarted: false, targetSpell: getRandomSpell(), currentOrbs: [], slotD: null, slotF: null }),
   resetOrbs: () => set({ currentOrbs: [] }),
   setTargetSpell: (spell) => set({ targetSpell: spell }),
   setKeybind: (key, value) => set((state) => ({ keybinds: { ...state.keybinds, [key]: value } })),
