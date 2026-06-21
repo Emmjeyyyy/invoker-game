@@ -7,32 +7,38 @@ interface MainMenuProps {
 }
 
 export const MainMenu: React.FC<MainMenuProps> = ({ showDifficultySelect, setShowDifficultySelect }) => {
-  const { startGame } = useGameStore();
+  const { startGame, isModelLoaded } = useGameStore();
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full flex-1 mt-8">
       {!showDifficultySelect && (
-        <h1 className="text-5xl lg:text-7xl font-victory text-textGold mb-12 tracking-widest text-shadow-glow">
+        <h1 
+          className={`text-5xl lg:text-7xl font-victory mb-12 pt-4 pb-2 leading-normal tracking-widest bg-linear-to-b from-[#ffffe6] via-[#ffd700] to-[#b8860b] text-transparent bg-clip-text ${isModelLoaded ? 'animate-fade-in-down' : 'opacity-0'}`}
+          style={{
+            filter: 'drop-shadow(0px 1px 0px #996b00) drop-shadow(0px 2px 0px #7a5500) drop-shadow(0px 3px 0px #5c4000) drop-shadow(0px 4px 0px #3d2b00) drop-shadow(0px 10px 20px rgba(0,0,0,0.9))',
+            WebkitTextStroke: '1px rgba(255,255,255,0.2)'
+          }}
+        >
           INVOKER GAME
         </h1>
       )}
       {!showDifficultySelect ? (
-        <div className="flex flex-col gap-6 w-full max-w-md">
+        <div className={`flex flex-col gap-6 w-full max-w-md ${isModelLoaded ? 'opacity-0 animate-fade-in-up' : 'opacity-0'}`}>
           <button
             onClick={() => startGame('Practice', 'Beginner')}
-            className="px-8 py-6 border border-panelBorder rounded-xl hover:bg-panelBorder/30 transition-all group flex flex-col items-center"
+            className="relative px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-yellow-600 via-yellow-700 to-yellow-900 border border-yellow-400/50 border-b-[6px] border-b-yellow-950 shadow-[inset_0_2px_10px_rgba(255,255,255,0.3),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[inset_0_2px_10px_rgba(255,255,255,0.5),0_15px_30px_rgba(202,138,4,0.4)] active:translate-y-[4px] active:border-b-2 active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
           >
-            <span className="text-2xl tracking-wider group-hover:text-white transition-colors">Practice Mode</span>
+            <span className="text-2xl font-bold tracking-widest text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">PRACTICE MODE</span>
           </button>
           <button
             onClick={() => setShowDifficultySelect(true)}
-            className="px-8 py-6 border border-red-900/50 rounded-xl hover:bg-red-900/20 transition-all group flex flex-col items-center"
+            className="relative px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-red-700 via-red-800 to-red-950 border border-red-400/40 border-b-[6px] border-b-[rgb(60,0,0)] shadow-[inset_0_2px_10px_rgba(255,255,255,0.2),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[inset_0_2px_10px_rgba(255,255,255,0.3),0_15px_30px_rgba(220,38,38,0.4)] active:translate-y-[4px] active:border-b-2 active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
           >
-            <span className="text-2xl tracking-wider text-red-400 group-hover:text-red-300 transition-colors">Challenge Mode</span>
+            <span className="text-2xl font-bold tracking-widest text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">CHALLENGE MODE</span>
           </button>
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-8 w-full max-w-5xl px-4">
+        <div className={`flex flex-col items-center gap-8 w-full max-w-5xl px-4 ${isModelLoaded ? 'opacity-0 animate-fade-in-up' : 'opacity-0'}`}>
           <h2 className="text-3xl text-center text-white tracking-widest text-shadow-glow">Select Difficulty</h2>
 
           <div className="flex flex-row justify-center gap-4 sm:gap-6 lg:gap-8 w-full">

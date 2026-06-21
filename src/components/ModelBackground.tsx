@@ -1,8 +1,9 @@
-import React, { Suspense, useRef } from 'react';
+import React, { Suspense, useRef, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { useGameStore } from '../store/gameStore';
 
 const MODEL_URL = '/asset/icons/3d%20model/invoker_dota_2.glb';
 
@@ -50,18 +51,31 @@ function FloatingOrbs() {
 function Model() {
   const { scene } = useGLTF(MODEL_URL);
   const groupRef = useRef<THREE.Group>(null);
+  const setModelLoaded = useGameStore((state) => state.setModelLoaded);
+  const timeRef = useRef(0);
+
+  useEffect(() => {
+    setModelLoaded(true);
+  }, [setModelLoaded]);
 
   // Continuously lerp towards the floating target position for a seamless entrance and float
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
+    // Accumulate time locally so it starts at 0 exactly when the model mounts
+    timeRef.current += delta;
+    
     if (groupRef.current) {
-      const targetY = -7.5 + Math.sin(state.clock.elapsedTime) * 0.15;
-      // High lerp factor means it closely follows the sine wave after rising
-      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetY, delta * 3.5);
+      const targetY = -7.5 + Math.sin(timeRef.current) * 0.15;
+      
+      // Wait for the UI entrance animations (1.2s) before rising up
+      if (timeRef.current > 1.2) {
+        // Smooth lerp factor for a majestic entrance
+        groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetY, delta * 2.0);
+      }
     }
   });
 
   return (
-    <group ref={groupRef} position={[0, -20, 0]} rotation={[0, 0, 0]} scale={[4.5, 4.5, 4.5]}>
+    <group ref={groupRef} position={[0, -25, 0]} rotation={[0, 0, 0]} scale={[4.5, 4.5, 4.5]}>
       <primitive object={scene} />
       <FloatingOrbs />
     </group>

@@ -26,6 +26,7 @@ interface GameState {
   mode: GameMode;
   difficulty: Difficulty;
   isStarted: boolean;
+  isModelLoaded: boolean;
   keybinds: Keybinds;
   volume: number;
   
@@ -53,6 +54,7 @@ interface GameState {
   setKeybinds: (newKeybinds: Keybinds) => void;
   resetKeybinds: () => void;
   setVolume: (volume: number) => void;
+  setModelLoaded: (loaded: boolean) => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -65,6 +67,7 @@ export const useGameStore = create<GameState>()(
       mode: 'Classic',
       difficulty: 'Beginner',
       isStarted: false,
+      isModelLoaded: false,
       keybinds: defaultKeybinds,
       volume: 0.5,
       
@@ -224,6 +227,7 @@ export const useGameStore = create<GameState>()(
   setKeybinds: (newKeybinds) => set({ keybinds: newKeybinds }),
   resetKeybinds: () => set({ keybinds: defaultKeybinds }),
   setVolume: (volume) => set({ volume }),
+  setModelLoaded: (loaded) => set({ isModelLoaded: loaded }),
 }),
 {
   name: 'invoker-game-storage',

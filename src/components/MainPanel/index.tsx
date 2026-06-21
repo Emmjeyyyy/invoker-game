@@ -70,7 +70,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
   };
 
   return (
-    <div className={`flex flex-col flex-1 min-h-0 justify-center border border-panelBorder rounded-xl p-4 sm:p-8 shadow-2xl items-center relative isolate w-full overflow-y-auto custom-scrollbar ${(!isStarted && !gameOver) ? 'bg-transparent' : 'bg-panel'}`}>
+    <div className={`flex flex-col flex-1 min-h-0 justify-center items-center relative isolate w-full overflow-y-auto custom-scrollbar ${(!isStarted && !gameOver) ? 'bg-transparent' : 'bg-panel border border-panelBorder rounded-xl p-4 sm:p-8 shadow-2xl'}`}>
       {(!isStarted && !gameOver) && <ModelBackground />}
       <HeaderControls onOpenSettings={onOpenSettings} isMuted={isMuted} toggleMute={toggleMute} />
       
@@ -93,11 +93,11 @@ export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
             <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 z-10">
               <button
                 onClick={endGame}
-                className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-red-900/30 hover:bg-red-900/50 border border-red-900/50 rounded-lg text-red-400 hover:text-red-300 transition-colors shadow-lg"
+                className="relative flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl transition-all duration-200 bg-linear-to-b from-red-700 via-red-800 to-red-950 border border-red-400/40 border-b-4 border-b-[rgb(60,0,0)] shadow-[inset_0_2px_10px_rgba(255,255,255,0.2),0_5px_10px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[inset_0_2px_10px_rgba(255,255,255,0.3),0_8px_15px_rgba(220,38,38,0.4)] active:translate-y-[2px] active:border-b-2 active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
                 title="Quit Game"
               >
-                <LogOut size={18} />
-                <span className="text-sm sm:text-base font-medium tracking-wider">Quit Game</span>
+                <LogOut size={18} className="text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />
+                <span className="text-sm sm:text-base font-bold tracking-wider text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">QUIT GAME</span>
               </button>
             </div>
           )}

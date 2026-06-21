@@ -45,8 +45,8 @@ function App() {
   }, { enabled: isGameActive }, [isGameActive, invoke, keybinds.R]);
 
   return (
-    <Layout>
-      <SpellsPanel />
+    <Layout isMenu={!isStarted && !gameOver}>
+      {isStarted && <SpellsPanel />}
       <div className="relative h-full flex-1 flex flex-col justify-center min-w-0">
         <MainPanel onOpenSettings={() => setIsSettingsOpen(true)} />
       </div>

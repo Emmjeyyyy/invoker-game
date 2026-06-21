@@ -1,36 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { SPELLS } from '../lib/constants';
-import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 
 export const SpellsPanel: React.FC = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
   return (
-    <div className={`flex flex-col bg-panel border border-panelBorder rounded-xl shadow-2xl overflow-hidden shrink-0 transition-all duration-300 relative ${
-      isCollapsed 
-        ? 'p-2 sm:p-3 lg:w-16 lg:h-full items-center justify-center' 
-        : 'p-2 sm:p-3 lg:p-6 2xl:p-8 lg:w-[280px] xl:w-[300px] lg:h-full'
-    }`}>
-      
-      {/* Toggle Button */}
-      <button 
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className={`z-10 p-1.5 rounded-lg hover:bg-panelBorder/50 text-textMuted hover:text-white transition-colors ${
-          isCollapsed ? '' : 'absolute right-2 top-2 lg:right-4 lg:top-4 2xl:top-6'
-        }`}
-        title={isCollapsed ? "Expand Spells" : "Collapse Spells"}
-      >
-        {isCollapsed ? <BookOpen size={20} className="text-textGold" /> : <ChevronLeft size={20} className="hidden lg:block" />}
-        {!isCollapsed && <ChevronLeft size={20} className="lg:hidden rotate-90" />} 
-      </button>
+    <div className="flex flex-col bg-panel border border-panelBorder rounded-xl shadow-2xl overflow-hidden shrink-0 transition-all duration-300 relative p-2 sm:p-3 lg:p-6 2xl:p-8 lg:w-[280px] xl:w-[300px] lg:h-full">
+      <h2 className="hidden lg:block text-center text-sm lg:text-base 2xl:text-xl tracking-[0.2em] uppercase font-bold text-textGold mb-4 lg:mb-6 2xl:mb-8 shrink-0">
+        Spells
+      </h2>
 
-      {!isCollapsed && (
-        <>
-          <h2 className="hidden lg:block text-center text-sm lg:text-base 2xl:text-xl tracking-[0.2em] uppercase font-bold text-textGold mb-4 lg:mb-6 2xl:mb-8 shrink-0">
-            Spells
-          </h2>
-
-          <div className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-hidden pb-2 lg:pb-0 pr-0 lg:pr-2 2xl:pr-4 gap-2 lg:gap-1 lg:justify-between lg:flex-1 custom-scrollbar items-start lg:items-stretch mt-8 lg:mt-0">
+      <div className="flex flex-row lg:flex-col overflow-x-auto lg:overflow-hidden pb-2 lg:pb-0 pr-0 lg:pr-2 2xl:pr-4 gap-2 lg:gap-1 lg:justify-between lg:flex-1 custom-scrollbar items-start lg:items-stretch mt-8 lg:mt-0">
         {SPELLS.map((spell) => {
           const isGradientSpell = spell.name === 'Deafening Blast' || spell.name === 'Tornado' || spell.name === 'Ghost Walk';
           const gradientBg = spell.name === 'Deafening Blast'
@@ -78,9 +56,7 @@ export const SpellsPanel: React.FC = () => {
             </div>
           );
         })}
-          </div>
-        </>
-      )}
+      </div>
     </div>
   );
 };
