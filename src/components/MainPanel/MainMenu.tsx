@@ -26,13 +26,13 @@ export const MainMenu: React.FC<MainMenuProps> = ({ showDifficultySelect, setSho
         <div className={`flex flex-col gap-6 w-full max-w-md ${isModelLoaded ? 'opacity-0 animate-fade-in-up' : 'opacity-0'}`}>
           <button
             onClick={() => startGame('Practice', 'Beginner')}
-            className="relative px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-yellow-600 via-yellow-700 to-yellow-900 border border-yellow-400/50 border-b-[6px] border-b-yellow-950 shadow-[inset_0_2px_10px_rgba(255,255,255,0.3),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[inset_0_2px_10px_rgba(255,255,255,0.5),0_15px_30px_rgba(202,138,4,0.4)] active:translate-y-[4px] active:border-b-2 active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
+            className="relative px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-yellow-600 via-yellow-700 to-yellow-900 border border-yellow-400/50 border-b-[6px] border-b-yellow-950 shadow-[inset_0_2px_10px_rgba(255,255,255,0.3),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[inset_0_2px_10px_rgba(255,255,255,0.5),0_15px_30px_rgba(202,138,4,0.4)] active:translate-y-[4px] active:border-b-2 active:mb-[4px] active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
           >
             <span className="text-2xl font-bold tracking-widest text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">PRACTICE MODE</span>
           </button>
           <button
             onClick={() => setShowDifficultySelect(true)}
-            className="relative px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-red-700 via-red-800 to-red-950 border border-red-400/40 border-b-[6px] border-b-[rgb(60,0,0)] shadow-[inset_0_2px_10px_rgba(255,255,255,0.2),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[inset_0_2px_10px_rgba(255,255,255,0.3),0_15px_30px_rgba(220,38,38,0.4)] active:translate-y-[4px] active:border-b-2 active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
+            className="relative px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-red-700 via-red-800 to-red-950 border border-red-400/40 border-b-[6px] border-b-[rgb(60,0,0)] shadow-[inset_0_2px_10px_rgba(255,255,255,0.2),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[inset_0_2px_10px_rgba(255,255,255,0.3),0_15px_30px_rgba(220,38,38,0.4)] active:translate-y-[4px] active:border-b-2 active:mb-[4px] active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
           >
             <span className="text-2xl font-bold tracking-widest text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">CHALLENGE MODE</span>
           </button>

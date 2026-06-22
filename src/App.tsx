@@ -32,9 +32,11 @@ function App() {
     }
   };
 
-  useHotkeys(keybinds.Q, () => handleOrb('Q'), { enabled: isGameActive }, [isGameActive, addOrb, keybinds.Q]);
-  useHotkeys(keybinds.W, () => handleOrb('W'), { enabled: isGameActive }, [isGameActive, addOrb, keybinds.W]);
-  useHotkeys(keybinds.E, () => handleOrb('E'), { enabled: isGameActive }, [isGameActive, addOrb, keybinds.E]);
+  const canPressOrbs = !isSettingsOpen;
+
+  useHotkeys(keybinds.Q, () => handleOrb('Q'), { enabled: canPressOrbs }, [canPressOrbs, addOrb, keybinds.Q]);
+  useHotkeys(keybinds.W, () => handleOrb('W'), { enabled: canPressOrbs }, [canPressOrbs, addOrb, keybinds.W]);
+  useHotkeys(keybinds.E, () => handleOrb('E'), { enabled: canPressOrbs }, [canPressOrbs, addOrb, keybinds.E]);
   
   useHotkeys(keybinds.D, () => handleCast('D'), { enabled: isGameActive }, [isGameActive, cast, keybinds.D]);
   useHotkeys(keybinds.F, () => handleCast('F'), { enabled: isGameActive }, [isGameActive, cast, keybinds.F]);

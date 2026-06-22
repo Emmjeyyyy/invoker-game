@@ -5,6 +5,7 @@
   src: url('/fonts/victory-striker-sans-demo/Victory Striker Sans Demo.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
+  font-display: block;
 }
 
 @theme {
@@ -29,6 +30,8 @@
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
   }
 }
 

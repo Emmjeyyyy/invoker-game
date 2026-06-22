@@ -9,14 +9,27 @@ const MODEL_URL = '/asset/icons/3d%20model/invoker_dota_2.glb';
 
 function Orb({ color, initialPos, speed, phase, intensity = 5 }: { color: string, initialPos: [number, number, number], speed: number, phase: number, intensity?: number }) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const scaleRef = useRef(1);
+  const prevColor = useRef(color);
 
-  useFrame((state) => {
+  useEffect(() => {
+    if (prevColor.current !== color) {
+      scaleRef.current = 1.6; // Instant scale up for pop effect
+      prevColor.current = color;
+    }
+  }, [color]);
+
+  useFrame((state, delta) => {
     if (meshRef.current) {
       // Independent vertical bobbing
       meshRef.current.position.y = initialPos[1] + Math.sin(state.clock.elapsedTime * speed + phase) * 0.2;
       // Slight independent horizontal wobble to break the perfect circle
       meshRef.current.position.x = initialPos[0] + Math.cos(state.clock.elapsedTime * (speed * 0.8) + phase) * 0.05;
       meshRef.current.position.z = initialPos[2] + Math.sin(state.clock.elapsedTime * (speed * 0.9) + phase) * 0.05;
+      
+      // Smoothly lerp scale back down to 1
+      scaleRef.current = THREE.MathUtils.lerp(scaleRef.current, 1, delta * 15);
+      meshRef.current.scale.set(scaleRef.current, scaleRef.current, scaleRef.current);
     }
   });
 
@@ -31,6 +44,7 @@ function Orb({ color, initialPos, speed, phase, intensity = 5 }: { color: string
 
 function FloatingOrbs() {
   const orbsRef = useRef<THREE.Group>(null);
+  const currentOrbs = useGameStore(state => state.currentOrbs);
 
   useFrame((state) => {
     if (orbsRef.current) {
@@ -39,11 +53,36 @@ function FloatingOrbs() {
     }
   });
 
+  const getOrbColor = (orb: string) => {
+    switch (orb) {
+      case 'Q': return '#4facfe';
+      case 'W': return '#d53e90';
+      case 'E': return '#ff8c00';
+      default: return '#ffffff';
+    }
+  };
+
+  const positions: [number, number, number][] = [
+    [0.85, 0, 0],
+    [-0.425, 0, 0.736],
+    [-0.425, 0, -0.736],
+  ];
+
+  // If no orbs are pressed, show a default set for aesthetics
+  const displayOrbs = currentOrbs.length === 0 ? ['Q', 'W', 'E'] : currentOrbs;
+
   return (
     <group ref={orbsRef} position={[0, 1.8, 0]}>
-      <Orb color="#4facfe" initialPos={[0.85, 0, 0]} speed={2.5} phase={0} />
-      <Orb color="#d53e90" initialPos={[-0.425, 0, 0.736]} speed={2.1} phase={2.4} intensity={12} />
-      <Orb color="#ff8c00" initialPos={[-0.425, 0, -0.736]} speed={3.0} phase={5.1} />
+      {displayOrbs.map((orb, idx) => (
+        <Orb 
+          key={idx} 
+          color={getOrbColor(orb)} 
+          initialPos={positions[idx]} 
+          speed={2.5 + idx * 0.2} 
+          phase={idx * 2.4} 
+          intensity={orb === 'W' ? 12 : 5} 
+        />
+      ))}
     </group>
   );
 }
