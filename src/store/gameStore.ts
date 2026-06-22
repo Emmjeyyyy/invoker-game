@@ -4,6 +4,17 @@ import type { Orb, Spell } from '../lib/constants';
 import { SPELLS, getCombinationId, getRandomSpell } from '../lib/constants';
 import { playSound } from '../lib/audio';
 
+const getComboSize = (score: number, mode: string) => {
+  if (mode === 'Challenge') {
+    if (score >= 50) return Math.random() > 0.5 ? 4 : 5;
+    if (score >= 35) return Math.random() > 0.5 ? 3 : 4;
+    if (score >= 20) return Math.random() > 0.5 ? 2 : 3;
+    if (score >= 10) return Math.random() > 0.5 ? 1 : 2;
+    return 1;
+  }
+  return score >= 30 ? (Math.random() > 0.5 ? 3 : 2) : 1;
+};
+
 type GameMode = 'Classic' | 'Timed' | 'Endless' | 'Practice' | 'Challenge' | 'Sprint' | 'Speedrun';
 type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced' | 'Pro';
 
@@ -154,7 +165,7 @@ export const useGameStore = create<GameState>()(
         let newSpells = targetSpells.slice(1);
         
         if (newSpells.length === 0) {
-          const comboSize = newCount >= 30 ? (Math.random() > 0.5 ? 3 : 2) : 1;
+          const comboSize = getComboSize(newCount, get().mode);
           let prevName = currentTarget.name;
           for (let i = 0; i < comboSize; i++) {
             const spell = getRandomSpell(prevName);
@@ -230,7 +241,7 @@ export const useGameStore = create<GameState>()(
         if (changeSpell) {
           let newSpells = targetSpells.slice(1);
           if (newSpells.length === 0) {
-            const comboSize = correctCount >= 30 ? (Math.random() > 0.5 ? 3 : 2) : 1;
+            const comboSize = getComboSize(correctCount, mode);
             let prevName = targetSpells[0]?.name;
             for (let i = 0; i < comboSize; i++) {
               const spell = getRandomSpell(prevName);
