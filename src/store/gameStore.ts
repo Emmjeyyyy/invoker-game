@@ -4,7 +4,7 @@ import type { Orb, Spell } from '../lib/constants';
 import { SPELLS, getCombinationId, getRandomSpell } from '../lib/constants';
 import { playSound } from '../lib/audio';
 
-type GameMode = 'Classic' | 'Timed' | 'Endless' | 'Practice' | 'Challenge';
+type GameMode = 'Classic' | 'Timed' | 'Endless' | 'Practice' | 'Challenge' | 'Sprint' | 'Speedrun';
 type Difficulty = 'Beginner' | 'Intermediate' | 'Advanced' | 'Pro';
 
 export type Keybinds = {
@@ -35,6 +35,7 @@ interface GameState {
   incorrectCount: number;
   streak: number;
   timeRemaining: number;
+  timeElapsed: number; // For Speedrun
   lastReactionTime: number | null; // in seconds
   lives: number;
   gameOver: boolean;
@@ -50,6 +51,9 @@ interface GameState {
   endGame: () => void;
   resetOrbs: () => void;
   setTargetSpells: (spells: Spell[]) => void;
+  setTimeRemaining: (time: number) => void;
+  setTimeElapsed: (time: number) => void;
+  setGameOver: (isOver: boolean) => void;
   setKeybind: (key: keyof Keybinds, value: string) => void;
   setKeybinds: (newKeybinds: Keybinds) => void;
   resetKeybinds: () => void;
@@ -75,6 +79,7 @@ export const useGameStore = create<GameState>()(
       incorrectCount: 0,
       streak: 0,
       timeRemaining: 0,
+      timeElapsed: 0,
       lastReactionTime: null,
       lives: 3,
       gameOver: false,
@@ -147,6 +152,11 @@ export const useGameStore = create<GameState>()(
             targetSpells: newSpells,
           }));
         }
+        
+        // Speedrun win condition
+        if (get().mode === 'Speedrun' && get().correctCount === 10) {
+          set({ gameOver: true });
+        }
       } else {
         set((state) => ({
           incorrectCount: state.incorrectCount + 1,
@@ -177,7 +187,8 @@ export const useGameStore = create<GameState>()(
     correctCount: 0,
     incorrectCount: 0,
     streak: 0,
-    timeRemaining: mode === 'Timed' ? 60 : 0,
+    timeRemaining: mode === 'Sprint' ? 10000 : (mode === 'Timed' ? 60000 : 0),
+    timeElapsed: 0,
     lives: mode === 'Challenge' ? 3 : 0,
     comboId: 0,
     currentComboSize: 1,
@@ -223,6 +234,9 @@ export const useGameStore = create<GameState>()(
   },
   resetOrbs: () => set({ currentOrbs: [] }),
   setTargetSpells: (spells) => set({ targetSpells: spells }),
+  setTimeRemaining: (time) => set({ timeRemaining: time }),
+  setTimeElapsed: (time) => set({ timeElapsed: time }),
+  setGameOver: (isOver) => set({ gameOver: isOver }),
   setKeybind: (key, value) => set((state) => ({ keybinds: { ...state.keybinds, [key]: value } })),
   setKeybinds: (newKeybinds) => set({ keybinds: newKeybinds }),
   resetKeybinds: () => set({ keybinds: defaultKeybinds }),

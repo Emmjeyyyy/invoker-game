@@ -20,6 +20,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
   const { isStarted, mode, gameOver, failSpell, correctCount, difficulty, comboId, currentComboSize, endGame } = useGameStore();
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [showDifficultySelect, setShowDifficultySelect] = useState<boolean>(false);
+  const [showTimeTrialSelect, setShowTimeTrialSelect] = useState<boolean>(false);
 
   // Determine timer parameters based on difficulty
   let initialTime = 3000;
@@ -63,6 +64,35 @@ export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
     }
   }, [isStarted, mode, gameOver, comboId, maxTime, failSpell]);
 
+  // Timer logic for Time Trial modes
+  const setTimeRemaining = useGameStore(state => state.setTimeRemaining);
+  const setTimeElapsed = useGameStore(state => state.setTimeElapsed);
+  const setGameOver = useGameStore(state => state.setGameOver);
+
+  useEffect(() => {
+    if (isStarted && !gameOver) {
+      if (mode === 'Sprint') {
+        const interval = setInterval(() => {
+          const { timeRemaining } = useGameStore.getState();
+          if (timeRemaining <= 50) {
+            setTimeRemaining(0);
+            setGameOver(true);
+            clearInterval(interval);
+          } else {
+            setTimeRemaining(timeRemaining - 50);
+          }
+        }, 50);
+        return () => clearInterval(interval);
+      } else if (mode === 'Speedrun') {
+        const interval = setInterval(() => {
+          const { timeElapsed } = useGameStore.getState();
+          setTimeElapsed(timeElapsed + 50);
+        }, 50);
+        return () => clearInterval(interval);
+      }
+    }
+  }, [isStarted, mode, gameOver, setTimeRemaining, setTimeElapsed, setGameOver]);
+
   const toggleMute = () => {
     const nextMuted = !isMuted;
     Howler.mute(nextMuted);
@@ -75,7 +105,12 @@ export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
       <HeaderControls onOpenSettings={onOpenSettings} isMuted={isMuted} toggleMute={toggleMute} />
       
       {!isStarted && !gameOver ? (
-        <MainMenu showDifficultySelect={showDifficultySelect} setShowDifficultySelect={setShowDifficultySelect} />
+        <MainMenu 
+          showDifficultySelect={showDifficultySelect} 
+          setShowDifficultySelect={setShowDifficultySelect}
+          showTimeTrialSelect={showTimeTrialSelect}
+          setShowTimeTrialSelect={setShowTimeTrialSelect}
+        />
       ) : (
         <>
           <GameInfo />
@@ -93,7 +128,7 @@ export const MainPanel: React.FC<MainPanelProps> = ({ onOpenSettings }) => {
             <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 z-10">
               <button
                 onClick={endGame}
-                className="relative flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl transition-all duration-200 bg-linear-to-b from-red-700 via-red-800 to-red-950 border border-red-400/40 border-b-4 border-b-[rgb(60,0,0)] shadow-[inset_0_2px_10px_rgba(255,255,255,0.2),0_5px_10px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[inset_0_2px_10px_rgba(255,255,255,0.3),0_8px_15px_rgba(220,38,38,0.4)] active:translate-y-[2px] active:border-b-2 active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
+                className="relative mb-[6px] flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl transition-all duration-200 bg-linear-to-b from-red-700 via-red-800 to-red-950 border border-red-400/40 shadow-[0_6px_0_rgb(60,0,0),inset_0_2px_10px_rgba(255,255,255,0.2),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[0_4px_0_rgb(60,0,0),inset_0_2px_10px_rgba(255,255,255,0.3),0_8px_15px_rgba(220,38,38,0.4)] hover:translate-y-[2px] active:translate-y-[6px] active:shadow-[0_0px_0_rgb(60,0,0),inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
                 title="Quit Game"
               >
                 <LogOut size={18} className="text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]" />

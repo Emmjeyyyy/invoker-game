@@ -4,9 +4,16 @@ import { useGameStore } from '../../store/gameStore';
 interface MainMenuProps {
   showDifficultySelect: boolean;
   setShowDifficultySelect: (show: boolean) => void;
+  showTimeTrialSelect: boolean;
+  setShowTimeTrialSelect: (show: boolean) => void;
 }
 
-export const MainMenu: React.FC<MainMenuProps> = ({ showDifficultySelect, setShowDifficultySelect }) => {
+export const MainMenu: React.FC<MainMenuProps> = ({ 
+  showDifficultySelect, 
+  setShowDifficultySelect,
+  showTimeTrialSelect,
+  setShowTimeTrialSelect
+}) => {
   const { startGame, isModelLoaded } = useGameStore();
 
   const gradientStyle = useMemo(() => {
@@ -15,7 +22,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({ showDifficultySelect, setSho
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full flex-1 mt-8">
-      {!showDifficultySelect && (
+      {!showDifficultySelect && !showTimeTrialSelect && (
         <div className={`relative mb-12 ${isModelLoaded ? 'animate-fade-in-down' : 'opacity-0'}`}>
           {/* Dark duplicate — same gradient but darker, offset down for 3D depth */}
           {[6, 5, 4, 3, 2, 1].map((offset) => (
@@ -44,23 +51,29 @@ export const MainMenu: React.FC<MainMenuProps> = ({ showDifficultySelect, setSho
           </h1>
         </div>
       )}
-      {!showDifficultySelect ? (
-        <div className={`flex flex-col gap-6 w-full max-w-md ${isModelLoaded ? 'opacity-0 animate-fade-in-up' : 'opacity-0'}`}>
+      {!showDifficultySelect && !showTimeTrialSelect ? (
+        <div key="main-menu" className={`flex flex-col gap-6 w-full max-w-md ${isModelLoaded ? 'opacity-0 animate-fade-in-up' : 'opacity-0'}`}>
           <button
             onClick={() => startGame('Practice', 'Beginner')}
-            className="relative px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-yellow-600 via-yellow-700 to-yellow-900 border border-yellow-400/50 border-b-[6px] border-b-yellow-950 shadow-[inset_0_2px_10px_rgba(255,255,255,0.3),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[inset_0_2px_10px_rgba(255,255,255,0.5),0_15px_30px_rgba(202,138,4,0.4)] active:translate-y-[4px] active:border-b-2 active:mb-[4px] active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
+            className="relative mb-[6px] px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-blue-700 via-blue-800 to-blue-950 border border-blue-400/40 shadow-[0_6px_0_rgb(0,0,60),inset_0_2px_10px_rgba(255,255,255,0.2),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[0_4px_0_rgb(0,0,60),inset_0_2px_10px_rgba(255,255,255,0.3),0_8px_15px_rgba(59,130,246,0.4)] hover:translate-y-[2px] active:translate-y-[6px] active:shadow-[0_0px_0_rgb(0,0,60),inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
           >
             <span className="text-2xl font-bold tracking-widest text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">PRACTICE MODE</span>
           </button>
           <button
             onClick={() => setShowDifficultySelect(true)}
-            className="relative px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-red-700 via-red-800 to-red-950 border border-red-400/40 border-b-[6px] border-b-[rgb(60,0,0)] shadow-[inset_0_2px_10px_rgba(255,255,255,0.2),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[inset_0_2px_10px_rgba(255,255,255,0.3),0_15px_30px_rgba(220,38,38,0.4)] active:translate-y-[4px] active:border-b-2 active:mb-[4px] active:shadow-[inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
+            className="relative mb-[6px] px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-pink-600 via-pink-700 to-pink-950 border border-pink-400/40 shadow-[0_6px_0_rgb(80,0,40),inset_0_2px_10px_rgba(255,255,255,0.2),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[0_4px_0_rgb(80,0,40),inset_0_2px_10px_rgba(255,255,255,0.3),0_8px_15px_rgba(236,72,153,0.4)] hover:translate-y-[2px] active:translate-y-[6px] active:shadow-[0_0px_0_rgb(80,0,40),inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
           >
             <span className="text-2xl font-bold tracking-widest text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">CHALLENGE MODE</span>
           </button>
+          <button
+            onClick={() => setShowTimeTrialSelect(true)}
+            className="relative mb-[6px] px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-yellow-600 via-yellow-700 to-yellow-900 border border-yellow-400/50 shadow-[0_6px_0_rgb(66,32,6),inset_0_2px_10px_rgba(255,255,255,0.3),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[0_4px_0_rgb(66,32,6),inset_0_2px_10px_rgba(255,255,255,0.5),0_8px_15px_rgba(202,138,4,0.4)] hover:translate-y-[2px] active:translate-y-[6px] active:shadow-[0_0px_0_rgb(66,32,6),inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
+          >
+            <span className="text-2xl font-bold tracking-widest text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">TIME TRIAL</span>
+          </button>
         </div>
-      ) : (
-        <div className={`flex flex-col items-center gap-8 w-full max-w-5xl px-4 ${isModelLoaded ? 'opacity-0 animate-fade-in-up' : 'opacity-0'}`}>
+      ) : showDifficultySelect ? (
+        <div key="difficulty-menu" className={`flex flex-col items-center gap-8 w-full max-w-5xl px-4 ${isModelLoaded ? 'opacity-0 animate-fade-in-up' : 'opacity-0'}`}>
           <h2 className="text-3xl text-center text-white tracking-widest text-shadow-glow">Select Difficulty</h2>
 
           <div className="flex flex-row justify-center gap-4 sm:gap-6 lg:gap-8 w-full">
@@ -103,9 +116,48 @@ export const MainMenu: React.FC<MainMenuProps> = ({ showDifficultySelect, setSho
 
           <button
             onClick={() => setShowDifficultySelect(false)}
-            className="mt-4 px-8 py-4 border-2 border-panelBorder rounded-xl hover:bg-panelBorder/30 transition-all text-xl tracking-wider text-textMuted hover:text-white hover:scale-105"
+            className="mt-4 relative mb-[4px] px-8 py-4 rounded-xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-slate-600 via-slate-700 to-slate-900 border border-slate-400/40 shadow-[0_4px_0_rgb(2,6,23),inset_0_2px_10px_rgba(255,255,255,0.2),0_8px_15px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[0_2px_0_rgb(2,6,23),inset_0_2px_10px_rgba(255,255,255,0.3),0_5px_10px_rgba(100,116,139,0.4)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-[0_0px_0_rgb(2,6,23),inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
           >
-            Back to Menu
+            <span className="text-xl tracking-wider text-slate-100 font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">BACK TO MENU</span>
+          </button>
+        </div>
+      ) : (
+        <div key="time-trial-menu" className={`flex flex-col items-center gap-8 w-full max-w-2xl px-4 ${isModelLoaded ? 'opacity-0 animate-fade-in-up' : 'opacity-0'}`}>
+          <h2 className="text-3xl text-center text-white tracking-widest text-shadow-glow">Select Time Trial Mode</h2>
+
+          <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 lg:gap-8 w-full">
+            {/* Sprint */}
+            <button
+              onClick={() => { setShowTimeTrialSelect(false); startGame('Sprint', 'Intermediate'); }}
+              className="relative flex-1 aspect-square max-h-[280px] rounded-2xl overflow-hidden border-2 border-blue-900/50 hover:border-blue-400 hover:scale-105 transition-all duration-300 group shadow-lg hover:shadow-[0_0_20px_rgba(96,165,250,0.3)] bg-slate-900"
+            >
+              <img src="/asset/bgs/invoker3.png" alt="Sprint Mode" className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-110" />
+              <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 flex flex-col items-center justify-end pb-6 lg:pb-8">
+                <span className="text-2xl sm:text-3xl tracking-widest text-blue-400 font-bold text-shadow-glow mb-1 drop-shadow-[0_4px_6px_rgba(0,0,0,1)]">SPRINT</span>
+                <span className="text-xs sm:text-sm text-blue-200 text-center font-serif drop-shadow-[0_2px_4px_rgba(0,0,0,1)] px-4">Cast as many spells as possible in 10 seconds</span>
+              </div>
+            </button>
+
+            {/* Speedrun */}
+            <button
+              onClick={() => { setShowTimeTrialSelect(false); startGame('Speedrun', 'Intermediate'); }}
+              className="relative flex-1 aspect-square max-h-[280px] rounded-2xl overflow-hidden border-2 border-purple-900/50 hover:border-purple-400 hover:scale-105 transition-all duration-300 group shadow-lg hover:shadow-[0_0_20px_rgba(192,132,252,0.3)] bg-slate-900"
+            >
+              <img src="/asset/bgs/invoker2.png" alt="Speedrun Mode" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+              <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 flex flex-col items-center justify-end pb-6 lg:pb-8">
+                <span className="text-2xl sm:text-3xl tracking-widest text-purple-400 font-bold text-shadow-glow mb-1 drop-shadow-[0_4px_6px_rgba(0,0,0,1)]">SPEEDRUN</span>
+                <span className="text-xs sm:text-sm text-purple-200 text-center font-serif drop-shadow-[0_2px_4px_rgba(0,0,0,1)] px-4">Cast 10 spells as fast as possible</span>
+              </div>
+            </button>
+          </div>
+
+          <button
+            onClick={() => setShowTimeTrialSelect(false)}
+            className="mt-4 relative mb-[4px] px-8 py-4 rounded-xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-slate-600 via-slate-700 to-slate-900 border border-slate-400/40 shadow-[0_4px_0_rgb(2,6,23),inset_0_2px_10px_rgba(255,255,255,0.2),0_8px_15px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[0_2px_0_rgb(2,6,23),inset_0_2px_10px_rgba(255,255,255,0.3),0_5px_10px_rgba(100,116,139,0.4)] hover:translate-y-[2px] active:translate-y-[4px] active:shadow-[0_0px_0_rgb(2,6,23),inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
+          >
+            <span className="text-xl tracking-wider text-slate-100 font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">BACK TO MENU</span>
           </button>
         </div>
       )}
