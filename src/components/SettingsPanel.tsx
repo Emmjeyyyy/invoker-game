@@ -85,9 +85,12 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
             )}
           </div>
         </div>
-        
-        <div className="flex flex-row flex-wrap justify-center gap-2 sm:gap-4 flex-1">
-          {controls.map((ctrl) => (
+        <div className="flex flex-col gap-2 mb-4">
+          <div className="text-xs tracking-widest text-textMuted uppercase font-bold text-center sm:text-left mb-2">
+            <span>Keybinds</span>
+          </div>
+          <div className="flex flex-row flex-wrap justify-center sm:justify-start gap-2 sm:gap-4 flex-1">
+            {controls.map((ctrl) => (
             <div 
               key={ctrl.key} 
               className="flex flex-col items-center gap-2 sm:gap-3 transition-all duration-200 cursor-pointer hover:bg-white/5 p-2 sm:p-3 rounded-lg"
@@ -104,9 +107,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
               </div>
             </div>
           ))}
+          </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-panelBorder flex flex-col gap-6">
+        <div className="mt-4 flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center text-xs tracking-widest text-textMuted uppercase font-bold">
               <span>Volume</span>
