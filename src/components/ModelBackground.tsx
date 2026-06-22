@@ -98,7 +98,47 @@ function Model() {
   }, [setModelLoaded]);
 
   // Continuously lerp towards the floating target position for a seamless entrance and float
-  useFrame((_, delta) => {
+  const headBoneRef = useRef<THREE.Object3D | null>(null);
+  const headInitialRot = useRef<THREE.Euler | null>(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const isActiveRef = useRef(true);
+
+  useEffect(() => {
+    const head = scene.getObjectByName('Head_0_026');
+    if (head) {
+      headBoneRef.current = head;
+      headInitialRot.current = head.rotation.clone();
+    }
+  }, [scene]);
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      // Normalize to -1 to 1
+      mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
+      mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    };
+    
+    const handleMouseLeave = () => { isActiveRef.current = false; };
+    const handleMouseEnter = () => { isActiveRef.current = true; };
+    const handleBlur = () => { isActiveRef.current = false; };
+    const handleFocus = () => { isActiveRef.current = true; };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('mouseenter', handleMouseEnter);
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('mouseenter', handleMouseEnter);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
+  useFrame((state, delta) => {
     // Accumulate time locally so it starts at 0 exactly when the model mounts
     timeRef.current += delta;
     
@@ -114,6 +154,32 @@ function Model() {
           Math.min(delta * 2.0, 1)
         );
       }
+    }
+
+    // Head tracking the mouse cursor
+    if (headBoneRef.current && headInitialRot.current) {
+      // The default model pose has his head turned. We add an offset to face him forward.
+      const forwardOffsetX = 0.05; // Fine-tuned to center his head perfectly
+      
+      let targetRotX = headInitialRot.current.x + forwardOffsetX;
+      let targetRotY = headInitialRot.current.y;
+      let targetRotZ = headInitialRot.current.z; // keep Z fixed to avoid head tilt
+
+      if (isActiveRef.current) {
+        // The local axes for this specific Dota 2 rig are swapped!
+        // Local X axis controls left/right (yaw).
+        // Local Y axis controls up/down (pitch).
+        targetRotX += mouseRef.current.x * 0.6;
+        targetRotY -= mouseRef.current.y * 0.4;
+      }
+
+      // We clamp the lerp factor to 1 (Math.min(delta * 5, 1)) to prevent the rotation from exploding and "swirling" 
+      // if the browser provides a massive time delta when alt-tabbing back to the page.
+      const lerpFactor = Math.min(delta * 5, 1);
+      
+      headBoneRef.current.rotation.x = THREE.MathUtils.lerp(headBoneRef.current.rotation.x, targetRotX, lerpFactor);
+      headBoneRef.current.rotation.y = THREE.MathUtils.lerp(headBoneRef.current.rotation.y, targetRotY, lerpFactor);
+      headBoneRef.current.rotation.z = THREE.MathUtils.lerp(headBoneRef.current.rotation.z, targetRotZ, lerpFactor);
     }
   });
 
