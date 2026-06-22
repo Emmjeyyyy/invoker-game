@@ -8,10 +8,28 @@ const BONES = [
   { id: 'bicep_L_029', label: 'Left Arm' },
   { id: 'elbow_L_030', label: 'Left Forearm' },
   { id: 'wrist_L_031', label: 'Left Wrist' },
+  { id: 'thumb_0_L_038', label: 'Left Thumb' },
+  { id: 'index_0_L_036', label: 'Left Index' },
+  { id: 'mid_0_L_040', label: 'Left Middle' },
+  { id: 'ring_0_L_032', label: 'Left Ring' },
+  { id: 'pinky_0_L_034', label: 'Left Pinky' },
   { id: 'bicep_R_013', label: 'Right Arm' },
   { id: 'elbow_R_014', label: 'Right Forearm' },
   { id: 'wrist_R_015', label: 'Right Wrist' },
+  { id: 'thumb_0_R_018', label: 'Right Thumb' },
+  { id: 'index_0_R_022', label: 'Right Index' },
+  { id: 'mid_0_R_016', label: 'Right Middle' },
+  { id: 'ring_0_R_024', label: 'Right Ring' },
+  { id: 'pinky_0_R_020', label: 'Right Pinky' },
 ];
+
+const BASE_OFFSETS: Record<string, { x: number, y: number, z: number }> = {
+  'Head_0_026': { x: -0.05, y: 0.15, z: 0 },
+  'bicep_L_029': { x: -0.65, y: 0, z: 0 },
+  'bicep_R_013': { x: -0.65, y: 0, z: 0 },
+  'wrist_L_031': { x: -0.4, y: 0, z: 0 },
+  'wrist_R_015': { x: -0.4, y: 0, z: 0 },
+};
 
 const AXES = ['x', 'y', 'z'] as const;
 
@@ -48,12 +66,15 @@ export const PoseConfig: React.FC = () => {
                 <h3 className="text-sm font-semibold text-slate-300 mb-3">{bone.label}</h3>
                 <div className="space-y-3">
                   {AXES.map((axis) => {
-                    const val = boneRotations[bone.id]?.[axis] || 0;
+                    const baseOffset = BASE_OFFSETS[bone.id]?.[axis] || 0;
+                    const configVal = boneRotations[bone.id]?.[axis] || 0;
+                    const displayVal = configVal + baseOffset;
+                    
                     return (
                       <div key={`${bone.id}-${axis}`} className="flex items-center gap-2">
                         <span className="text-xs font-bold text-slate-500 uppercase w-4">{axis}</span>
                         <button
-                          onClick={() => setBoneRotation(bone.id, axis, Math.max(-3.14, val - 0.01))}
+                          onClick={() => setBoneRotation(bone.id, axis, Math.max(-3.14 - baseOffset, configVal - 0.01))}
                           className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200 transition-colors"
                         >
                           <Minus size={14} />
@@ -63,12 +84,12 @@ export const PoseConfig: React.FC = () => {
                           min="-3.14"
                           max="3.14"
                           step="0.01"
-                          value={val}
-                          onChange={(e) => setBoneRotation(bone.id, axis, parseFloat(e.target.value))}
+                          value={displayVal}
+                          onChange={(e) => setBoneRotation(bone.id, axis, parseFloat(e.target.value) - baseOffset)}
                           className="flex-1 accent-indigo-500"
                         />
                         <button
-                          onClick={() => setBoneRotation(bone.id, axis, Math.min(3.14, val + 0.01))}
+                          onClick={() => setBoneRotation(bone.id, axis, Math.min(3.14 - baseOffset, configVal + 0.01))}
                           className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200 transition-colors"
                         >
                           <Plus size={14} />
@@ -76,11 +97,11 @@ export const PoseConfig: React.FC = () => {
                         <input
                           type="number"
                           step="0.01"
-                          value={Number(val.toFixed(2))}
+                          value={Number(displayVal.toFixed(2))}
                           onChange={(e) => {
                             const newVal = parseFloat(e.target.value);
                             if (!isNaN(newVal)) {
-                              setBoneRotation(bone.id, axis, newVal);
+                              setBoneRotation(bone.id, axis, newVal - baseOffset);
                             }
                           }}
                           className="w-14 text-xs bg-slate-900/50 border border-slate-700 rounded px-1 py-0.5 text-slate-300 tabular-nums text-right outline-none focus:border-indigo-500 transition-colors"
