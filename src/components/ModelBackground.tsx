@@ -145,7 +145,7 @@ export const ModelBackground: React.FC = () => {
           <Model />
           {/* Post-processing (Bloom) is notoriously laggy on mobile GPUs, so we turn it off for phones */}
           {!isMobile && (
-            <EffectComposer disableNormalPass>
+            <EffectComposer>
               <Bloom luminanceThreshold={1} mipmapBlur intensity={1.2} radius={0.5} />
             </EffectComposer>
           )}
