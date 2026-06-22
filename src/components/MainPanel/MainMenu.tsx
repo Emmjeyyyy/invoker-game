@@ -8,8 +8,8 @@ interface MainMenuProps {
   setShowTimeTrialSelect: (show: boolean) => void;
 }
 
-export const MainMenu: React.FC<MainMenuProps> = ({ 
-  showDifficultySelect, 
+export const MainMenu: React.FC<MainMenuProps> = ({
+  showDifficultySelect,
   setShowDifficultySelect,
   showTimeTrialSelect,
   setShowTimeTrialSelect
@@ -55,7 +55,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         <div key="main-menu" className={`flex flex-col gap-6 w-full max-w-md ${isModelLoaded ? 'opacity-0 animate-fade-in-up' : 'opacity-0'}`}>
           <button
             onClick={() => startGame('Practice', 'Beginner')}
-            className="relative mb-[6px] px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-blue-700 via-blue-800 to-blue-950 border border-blue-400/40 shadow-[0_6px_0_rgb(0,0,60),inset_0_2px_10px_rgba(255,255,255,0.2),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[0_4px_0_rgb(0,0,60),inset_0_2px_10px_rgba(255,255,255,0.3),0_8px_15px_rgba(59,130,246,0.4)] hover:translate-y-[2px] active:translate-y-[6px] active:shadow-[0_0px_0_rgb(0,0,60),inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
+            className="relative mb-[6px] px-8 py-5 rounded-2xl transition-all duration-200 group flex flex-col items-center justify-center bg-linear-to-b from-sky-500 via-sky-600 to-blue-800 border border-blue-300/50 shadow-[0_6px_0_rgb(30,58,138),inset_0_2px_10px_rgba(255,255,255,0.3),0_10px_20px_rgba(0,0,0,0.6)] hover:brightness-110 hover:shadow-[0_4px_0_rgb(30,58,138),inset_0_2px_10px_rgba(255,255,255,0.4),0_8px_15px_rgba(59,130,246,0.6)] hover:translate-y-[2px] active:translate-y-[6px] active:shadow-[0_0px_0_rgb(30,58,138),inset_0_4px_10px_rgba(0,0,0,0.4),0_2px_5px_rgba(0,0,0,0.6)]"
           >
             <span className="text-2xl font-bold tracking-widest text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">PRACTICE MODE</span>
           </button>
