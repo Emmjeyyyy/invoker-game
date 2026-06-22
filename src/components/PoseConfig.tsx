@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SlidersHorizontal, X, RotateCcw, Plus, Minus } from 'lucide-react';
+import { SlidersHorizontal, X, RotateCcw, Plus, Minus, Copy, Check } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 
 const BONES = [
@@ -44,10 +44,25 @@ const BASE_OFFSETS: Record<string, { x: number, y: number, z: number }> = {
 const AXES = ['x', 'y', 'z'] as const;
 
 export const PoseConfig: React.FC<{ alwaysOpen?: boolean }> = ({ alwaysOpen = false }) => {
+  const { boneRotations, setBoneRotation, resetBoneRotations } = useGameStore();
   const [isOpen, setIsOpen] = useState(alwaysOpen);
-  const boneRotations = useGameStore((state) => state.boneRotations);
-  const setBoneRotation = useGameStore((state) => state.setBoneRotation);
-  const resetBoneRotations = useGameStore((state) => state.resetBoneRotations);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    let output = '';
+    BONES.forEach(bone => {
+      const x = (boneRotations[bone.id]?.x || 0) + (BASE_OFFSETS[bone.id]?.x || 0);
+      const y = (boneRotations[bone.id]?.y || 0) + (BASE_OFFSETS[bone.id]?.y || 0);
+      const z = (boneRotations[bone.id]?.z || 0) + (BASE_OFFSETS[bone.id]?.z || 0);
+      
+      const label = bone.label.toLowerCase().replace(/\s+/g, '');
+      output += `${label}x : ${Number(x.toFixed(3))}, ${label}y : ${Number(y.toFixed(3))}, ${label}z : ${Number(z.toFixed(3))}\n`;
+    });
+    
+    navigator.clipboard.writeText(output.trim());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className={alwaysOpen ? "h-full w-full flex flex-col" : "absolute top-20 right-4 z-50 flex flex-col items-end"}>
@@ -61,19 +76,31 @@ export const PoseConfig: React.FC<{ alwaysOpen?: boolean }> = ({ alwaysOpen = fa
       )}
 
       {(isOpen || alwaysOpen) && (
-        <div className={`${alwaysOpen ? 'flex-1 h-full w-full' : 'mt-4 w-96 max-h-[80vh]'} overflow-y-auto bg-slate-950/40 border border-white/10 rounded-xl p-4 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] backdrop-blur-2xl custom-scrollbar`}>
-          <div className="sticky top-0 z-10 flex items-center justify-between mb-4 pb-4 pt-4 px-4 -mx-4 -mt-4 border-b border-white/10 bg-slate-950/60 backdrop-blur-2xl">
+        <div className={`${alwaysOpen ? 'flex-1 h-full w-full' : 'mt-4 w-96 max-h-[80vh]'} flex flex-col bg-slate-950/40 border border-white/10 rounded-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] backdrop-blur-2xl`}>
+          {/* Static Header */}
+          <div className="flex-none flex items-center justify-between p-4 border-b border-white/10 bg-slate-950 rounded-t-xl">
             <h2 className="text-lg font-bold text-slate-200">Pose Configurator</h2>
-            <button
-              onClick={resetBoneRotations}
-              className="p-2 bg-red-900/40 text-red-400 hover:bg-red-800/60 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
-            >
-              <RotateCcw size={16} /> Reset
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleCopy}
+                className="p-2 bg-blue-900/40 text-blue-400 hover:bg-blue-800/60 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+              >
+                {copied ? <Check size={16} /> : <Copy size={16} />} 
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+              <button
+                onClick={resetBoneRotations}
+                className="p-2 bg-red-900/40 text-red-400 hover:bg-red-800/60 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+              >
+                <RotateCcw size={16} /> Reset
+              </button>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            {BONES.map((bone) => (
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+            <div className="space-y-6">
+              {BONES.map((bone) => (
               <div key={bone.id} className="bg-white/5 p-3 rounded-lg border border-white/5 shadow-inner">
                 <h3 className="text-sm font-semibold text-slate-200 mb-3 drop-shadow-sm">{bone.label}</h3>
                 <div className="space-y-3">
@@ -131,6 +158,7 @@ export const PoseConfig: React.FC<{ alwaysOpen?: boolean }> = ({ alwaysOpen = fa
                 </div>
               </div>
             ))}
+            </div>
           </div>
         </div>
       )}
