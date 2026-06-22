@@ -95,19 +95,20 @@ function FloatingOrbs() {
   );
 }
 
+const globalInitialRotations: Record<string, THREE.Euler> = {};
+
 function Model() {
   const { scene } = useGLTF(MODEL_URL);
   const groupRef = useRef<THREE.Group>(null);
   const setModelLoaded = useGameStore((state) => state.setModelLoaded);
   const timeRef = useRef(0);
 
+  // Continuously lerp towards the floating target position for a seamless entrance and float
+  const boneRefs = useRef<Record<string, THREE.Object3D>>({});
+  
   useEffect(() => {
     setModelLoaded(true);
   }, [setModelLoaded]);
-
-  // Continuously lerp towards the floating target position for a seamless entrance and float
-  const boneRefs = useRef<Record<string, THREE.Object3D>>({});
-  const initialRotations = useRef<Record<string, THREE.Euler>>({});
   const mouseRef = useRef({ x: 0, y: 0 });
   const isActiveRef = useRef(true);
 
@@ -144,8 +145,10 @@ function Model() {
       const bone = scene.getObjectByName(boneName);
       if (bone) {
         boneRefs.current[boneName] = bone;
-        initialRotations.current[boneName] = bone.rotation.clone();
-        activeConfigurableBones.current.push({ boneName, bone, initialRot: initialRotations.current[boneName] });
+        if (!globalInitialRotations[boneName]) {
+          globalInitialRotations[boneName] = bone.rotation.clone();
+        }
+        activeConfigurableBones.current.push({ boneName, bone, initialRot: globalInitialRotations[boneName] });
       }
     });
 
@@ -154,15 +157,15 @@ function Model() {
     scene.traverse((obj) => {
       if (obj.type === 'Bone' && obj.name.startsWith('invoker_cape_')) {
         boneRefs.current[obj.name] = obj as THREE.Bone;
-        if (!initialRotations.current[obj.name]) {
-          initialRotations.current[obj.name] = obj.rotation.clone();
+        if (!globalInitialRotations[obj.name]) {
+          globalInitialRotations[obj.name] = obj.rotation.clone();
         }
         
         const match = obj.name.match(/_R(\d)C/);
         if (match) {
           capePhysicsBones.current.push({
             bone: obj as THREE.Bone,
-            initialRot: initialRotations.current[obj.name],
+            initialRot: globalInitialRotations[obj.name],
             rowIdx: parseInt(match[1])
           });
         }
@@ -197,7 +200,7 @@ function Model() {
     };
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((_state, delta) => {
     // Accumulate time locally so it starts at 0 exactly when the model mounts
     timeRef.current += delta;
 
@@ -220,7 +223,7 @@ function Model() {
 
     // Head tracking the mouse cursor
     const head = boneRefs.current['Head_0_026'];
-    const initialHead = initialRotations.current['Head_0_026'];
+    const initialHead = globalInitialRotations['Head_0_026'];
 
     if (head && initialHead) {
       // The default model pose has his head turned. We add an offset to face him forward.
