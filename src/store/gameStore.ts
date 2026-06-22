@@ -49,7 +49,7 @@ interface GameState {
   startGame: (mode: GameMode, difficulty: Difficulty) => void;
   endGame: () => void;
   resetOrbs: () => void;
-  setTargetSpell: (spell: Spell) => void;
+  setTargetSpells: (spells: Spell[]) => void;
   setKeybind: (key: keyof Keybinds, value: string) => void;
   setKeybinds: (newKeybinds: Keybinds) => void;
   resetKeybinds: () => void;
@@ -61,7 +61,7 @@ export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
       currentOrbs: [],
-      targetSpell: getRandomSpell(),
+      targetSpells: [getRandomSpell()],
       slotD: null,
       slotF: null,
       mode: 'Classic',
@@ -222,7 +222,7 @@ export const useGameStore = create<GameState>()(
     }
   },
   resetOrbs: () => set({ currentOrbs: [] }),
-  setTargetSpell: (spell) => set({ targetSpell: spell }),
+  setTargetSpells: (spells) => set({ targetSpells: spells }),
   setKeybind: (key, value) => set((state) => ({ keybinds: { ...state.keybinds, [key]: value } })),
   setKeybinds: (newKeybinds) => set({ keybinds: newKeybinds }),
   resetKeybinds: () => set({ keybinds: defaultKeybinds }),

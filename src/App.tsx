@@ -5,10 +5,10 @@ import { MainPanel } from './components/MainPanel';
 import { SpellsPanel } from './components/SpellsPanel';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useGameStore } from './store/gameStore';
-import { playSound, playClick, Howler } from './lib/audio';
+import { playSound, Howler } from './lib/audio';
 
 function App() {
-  const { addOrb, invoke, cast, isStarted, gameOver, startGame, keybinds, volume } = useGameStore();
+  const { addOrb, invoke, cast, isStarted, gameOver, keybinds, volume } = useGameStore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   const isGameActive = isStarted && !gameOver && !isSettingsOpen;
