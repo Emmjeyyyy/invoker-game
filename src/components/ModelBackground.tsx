@@ -128,18 +128,27 @@ function Model() {
 useGLTF.preload(MODEL_URL);
 
 export const ModelBackground: React.FC = () => {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden rounded-xl pointer-events-none">
-      <Canvas camera={{ position: [0, 0, 8], fov: 50 }}>
+      <Canvas 
+        camera={{ position: [0, 0, 8], fov: 50 }}
+        dpr={[1, 1.5]} // Limit pixel ratio to 1.5 to save massive GPU overhead on phones
+        performance={{ min: 0.5 }} // Allow R3F to downgrade resolution if framerate drops
+      >
         <ambientLight intensity={0.4} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <directionalLight position={[-10, 10, -5]} intensity={0.5} color="#4facfe" />
         <directionalLight position={[10, -10, -5]} intensity={0.5} color="#ff8c00" />
         <Suspense fallback={null}>
           <Model />
-          <EffectComposer>
-            <Bloom luminanceThreshold={1} mipmapBlur intensity={1.2} radius={0.5} />
-          </EffectComposer>
+          {/* Post-processing (Bloom) is notoriously laggy on mobile GPUs, so we turn it off for phones */}
+          {!isMobile && (
+            <EffectComposer disableNormalPass>
+              <Bloom luminanceThreshold={1} mipmapBlur intensity={1.2} radius={0.5} />
+            </EffectComposer>
+          )}
         </Suspense>
       </Canvas>
     </div>
