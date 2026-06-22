@@ -8,19 +8,29 @@ const BONES = [
   { id: 'bicep_L_029', label: 'Left Arm' },
   { id: 'elbow_L_030', label: 'Left Forearm' },
   { id: 'wrist_L_031', label: 'Left Wrist' },
-  { id: 'thumb_0_L_038', label: 'Left Thumb' },
-  { id: 'index_0_L_036', label: 'Left Index' },
-  { id: 'mid_0_L_040', label: 'Left Middle' },
-  { id: 'ring_0_L_032', label: 'Left Ring' },
-  { id: 'pinky_0_L_034', label: 'Left Pinky' },
+  { id: 'thumb_0_L_038', label: 'L Thumb 1' },
+  { id: 'thumb_1_L_039', label: 'L Thumb 2' },
+  { id: 'index_0_L_036', label: 'L Index 1' },
+  { id: 'index_1_L_037', label: 'L Index 2' },
+  { id: 'mid_0_L_040', label: 'L Middle 1' },
+  { id: 'mid_1_L_041', label: 'L Middle 2' },
+  { id: 'ring_0_L_032', label: 'L Ring 1' },
+  { id: 'ring_1_L_033', label: 'L Ring 2' },
+  { id: 'pinky_0_L_034', label: 'L Pinky 1' },
+  { id: 'pinky_1_L_035', label: 'L Pinky 2' },
   { id: 'bicep_R_013', label: 'Right Arm' },
   { id: 'elbow_R_014', label: 'Right Forearm' },
   { id: 'wrist_R_015', label: 'Right Wrist' },
-  { id: 'thumb_0_R_018', label: 'Right Thumb' },
-  { id: 'index_0_R_022', label: 'Right Index' },
-  { id: 'mid_0_R_016', label: 'Right Middle' },
-  { id: 'ring_0_R_024', label: 'Right Ring' },
-  { id: 'pinky_0_R_020', label: 'Right Pinky' },
+  { id: 'thumb_0_R_018', label: 'R Thumb 1' },
+  { id: 'thumb_1_R_019', label: 'R Thumb 2' },
+  { id: 'index_0_R_022', label: 'R Index 1' },
+  { id: 'index_1_R_023', label: 'R Index 2' },
+  { id: 'mid_0_R_016', label: 'R Middle 1' },
+  { id: 'mid_1_R_017', label: 'R Middle 2' },
+  { id: 'ring_0_R_024', label: 'R Ring 1' },
+  { id: 'ring_1_R_025', label: 'R Ring 2' },
+  { id: 'pinky_0_R_020', label: 'R Pinky 1' },
+  { id: 'pinky_1_R_021', label: 'R Pinky 2' },
 ];
 
 const BASE_OFFSETS: Record<string, { x: number, y: number, z: number }> = {
@@ -33,24 +43,26 @@ const BASE_OFFSETS: Record<string, { x: number, y: number, z: number }> = {
 
 const AXES = ['x', 'y', 'z'] as const;
 
-export const PoseConfig: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+export const PoseConfig: React.FC<{ alwaysOpen?: boolean }> = ({ alwaysOpen = false }) => {
+  const [isOpen, setIsOpen] = useState(alwaysOpen);
   const boneRotations = useGameStore((state) => state.boneRotations);
   const setBoneRotation = useGameStore((state) => state.setBoneRotation);
   const resetBoneRotations = useGameStore((state) => state.resetBoneRotations);
 
   return (
-    <div className="absolute top-20 right-4 z-50 flex flex-col items-end">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="p-3 bg-slate-900/80 border border-slate-700 rounded-full hover:bg-slate-800 transition-colors shadow-lg backdrop-blur-sm"
-      >
-        {isOpen ? <X className="text-slate-300" size={24} /> : <SlidersHorizontal className="text-slate-300" size={24} />}
-      </button>
+    <div className={alwaysOpen ? "h-full w-full flex flex-col" : "absolute top-20 right-4 z-50 flex flex-col items-end"}>
+      {!alwaysOpen && (
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="p-3 bg-slate-900/40 border border-white/10 rounded-full hover:bg-slate-800/60 transition-colors shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] backdrop-blur-xl"
+        >
+          {isOpen ? <X className="text-slate-300" size={24} /> : <SlidersHorizontal className="text-slate-300" size={24} />}
+        </button>
+      )}
 
-      {isOpen && (
-        <div className="mt-4 w-96 max-h-[80vh] overflow-y-auto bg-slate-900/95 border border-slate-700 rounded-xl p-4 shadow-2xl backdrop-blur-md custom-scrollbar">
-          <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-800">
+      {(isOpen || alwaysOpen) && (
+        <div className={`${alwaysOpen ? 'flex-1 h-full w-full' : 'mt-4 w-96 max-h-[80vh]'} overflow-y-auto bg-slate-950/40 border border-white/10 rounded-xl p-4 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] backdrop-blur-2xl custom-scrollbar`}>
+          <div className="sticky top-0 z-10 flex items-center justify-between mb-4 pb-4 pt-4 px-4 -mx-4 -mt-4 border-b border-white/10 bg-slate-950/60 backdrop-blur-2xl">
             <h2 className="text-lg font-bold text-slate-200">Pose Configurator</h2>
             <button
               onClick={resetBoneRotations}
@@ -62,8 +74,8 @@ export const PoseConfig: React.FC = () => {
 
           <div className="space-y-6">
             {BONES.map((bone) => (
-              <div key={bone.id} className="bg-slate-800/50 p-3 rounded-lg border border-slate-700/50">
-                <h3 className="text-sm font-semibold text-slate-300 mb-3">{bone.label}</h3>
+              <div key={bone.id} className="bg-white/5 p-3 rounded-lg border border-white/5 shadow-inner">
+                <h3 className="text-sm font-semibold text-slate-200 mb-3 drop-shadow-sm">{bone.label}</h3>
                 <div className="space-y-3">
                   {AXES.map((axis) => {
                     const baseOffset = BASE_OFFSETS[bone.id]?.[axis] || 0;
@@ -75,7 +87,7 @@ export const PoseConfig: React.FC = () => {
                         <span className="text-xs font-bold text-slate-500 uppercase w-4">{axis}</span>
                         <button
                           onClick={() => setBoneRotation(bone.id, axis, Math.max(-3.14 - baseOffset, configVal - 0.01))}
-                          className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200 transition-colors"
+                          className="p-1 hover:bg-white/10 rounded text-slate-300 hover:text-white transition-colors"
                         >
                           <Minus size={14} />
                         </button>
@@ -86,11 +98,11 @@ export const PoseConfig: React.FC = () => {
                           step="0.01"
                           value={displayVal}
                           onChange={(e) => setBoneRotation(bone.id, axis, parseFloat(e.target.value) - baseOffset)}
-                          className="flex-1 accent-indigo-500"
+                          className="flex-1 accent-indigo-400 opacity-80 hover:opacity-100 transition-opacity"
                         />
                         <button
                           onClick={() => setBoneRotation(bone.id, axis, Math.min(3.14 - baseOffset, configVal + 0.01))}
-                          className="p-1 hover:bg-slate-700 rounded text-slate-400 hover:text-slate-200 transition-colors"
+                          className="p-1 hover:bg-white/10 rounded text-slate-300 hover:text-white transition-colors"
                         >
                           <Plus size={14} />
                         </button>
@@ -104,8 +116,15 @@ export const PoseConfig: React.FC = () => {
                               setBoneRotation(bone.id, axis, newVal - baseOffset);
                             }
                           }}
-                          className="w-14 text-xs bg-slate-900/50 border border-slate-700 rounded px-1 py-0.5 text-slate-300 tabular-nums text-right outline-none focus:border-indigo-500 transition-colors"
+                          className="w-14 text-xs bg-black/20 border border-white/10 rounded px-1 py-0.5 text-slate-200 tabular-nums text-right outline-none focus:border-indigo-400 transition-colors shadow-inner"
                         />
+                        <button
+                          onClick={() => setBoneRotation(bone.id, axis, 0)}
+                          className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-red-400 transition-colors"
+                          title={`Reset ${axis.toUpperCase()} to default`}
+                        >
+                          <RotateCcw size={12} />
+                        </button>
                       </div>
                     );
                   })}

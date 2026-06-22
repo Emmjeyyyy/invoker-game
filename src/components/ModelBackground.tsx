@@ -113,8 +113,12 @@ function Model() {
   }, [currentOrbs]);
 
   const fingerBones = [
-    'mid_0_R_016', 'thumb_0_R_018', 'pinky_0_R_020', 'index_0_R_022', 'ring_0_R_024',
-    'ring_0_L_032', 'pinky_0_L_034', 'index_0_L_036', 'thumb_0_L_038', 'mid_0_L_040'
+    'mid_0_R_016', 'mid_1_R_017', 'thumb_0_R_018', 'thumb_1_R_019', 
+    'pinky_0_R_020', 'pinky_1_R_021', 'index_0_R_022', 'index_1_R_023', 
+    'ring_0_R_024', 'ring_1_R_025',
+    'ring_0_L_032', 'ring_1_L_033', 'pinky_0_L_034', 'pinky_1_L_035', 
+    'index_0_L_036', 'index_1_L_037', 'thumb_0_L_038', 'thumb_1_L_039', 
+    'mid_0_L_040', 'mid_1_L_041'
   ];
   const configurableBones = [
     'Spine_1_011', 'Head_0_026', 
@@ -131,7 +135,17 @@ function Model() {
         initialRotations.current[boneName] = bone.rotation.clone();
       }
     });
-  }, [scene]);
+
+    // Extract cape bones for programmatic inertia animations
+    scene.traverse((obj) => {
+      if (obj.type === 'Bone' && obj.name.startsWith('invoker_cape_')) {
+        boneRefs.current[obj.name] = obj as THREE.Bone;
+        if (!initialRotations.current[obj.name]) {
+          initialRotations.current[obj.name] = obj.rotation.clone();
+        }
+      }
+    });
+  }, [scene, JSON.stringify(configurableBones)]);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -291,6 +305,29 @@ function Model() {
         bone.rotation.x = THREE.MathUtils.lerp(bone.rotation.x, initialRot.x + defaultOffsetX + configRot.x, currentLerp);
         bone.rotation.y = THREE.MathUtils.lerp(bone.rotation.y, initialRot.y + defaultOffsetY + configRot.y, currentLerp);
         bone.rotation.z = THREE.MathUtils.lerp(bone.rotation.z, initialRot.z + defaultOffsetZ + configRot.z, currentLerp);
+      }
+    });
+
+    // Apply Cape Inertia
+    Object.keys(boneRefs.current).forEach(boneName => {
+      if (boneName.startsWith('invoker_cape_')) {
+        const bone = boneRefs.current[boneName];
+        const initialRot = initialRotations.current[boneName];
+        const match = boneName.match(/_R(\d)C/);
+        
+        if (bone && initialRot && match) {
+          const rowIdx = parseInt(match[1]);
+          // The body floats with Math.sin(timeRef.current)
+          // We add a delay phase based on the row (further down the cape = more delay)
+          const delay = rowIdx * 0.3;
+          // Further down the cape = larger swinging amplitude
+          const amplitude = (rowIdx + 1) * 0.04;
+          
+          // X axis is typically the swing axis for the cape
+          const inertiaX = -Math.sin(timeRef.current - delay) * amplitude;
+          
+          bone.rotation.x = THREE.MathUtils.lerp(bone.rotation.x, initialRot.x + inertiaX, lerpFactor);
+        }
       }
     });
 
