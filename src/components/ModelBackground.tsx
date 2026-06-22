@@ -7,17 +7,17 @@ import { useGameStore } from '../store/gameStore';
 
 const MODEL_URL = '/asset/icons/3d%20model/invoker_dota_2.glb';
 
-function Orb({ color, initialPos, speed, phase, intensity = 5 }: { color: string, initialPos: [number, number, number], speed: number, phase: number, intensity?: number }) {
+function Orb({ color, initialPos, speed, phase, intensity = 5, isVisible = true }: { color: string, initialPos: [number, number, number], speed: number, phase: number, intensity?: number, isVisible?: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const scaleRef = useRef(1);
+  const scaleRef = useRef(isVisible ? 1 : 0);
   const prevColor = useRef(color);
 
   useEffect(() => {
-    if (prevColor.current !== color) {
+    if (isVisible && prevColor.current !== color && color !== '#000000') {
       scaleRef.current = 1.6; // Instant scale up for pop effect
       prevColor.current = color;
     }
-  }, [color]);
+  }, [color, isVisible]);
 
   useFrame((state, delta) => {
     if (meshRef.current) {
@@ -27,17 +27,19 @@ function Orb({ color, initialPos, speed, phase, intensity = 5 }: { color: string
       meshRef.current.position.x = initialPos[0] + Math.cos(state.clock.elapsedTime * (speed * 0.8) + phase) * 0.05;
       meshRef.current.position.z = initialPos[2] + Math.sin(state.clock.elapsedTime * (speed * 0.9) + phase) * 0.05;
 
-      // Smoothly lerp scale back down to 1
-      scaleRef.current = THREE.MathUtils.lerp(scaleRef.current, 1, delta * 15);
+      // Smoothly lerp scale towards target (1 if visible, 0 if hidden)
+      const targetScale = isVisible ? 1 : 0;
+      scaleRef.current = THREE.MathUtils.lerp(scaleRef.current, targetScale, delta * 15);
       meshRef.current.scale.set(scaleRef.current, scaleRef.current, scaleRef.current);
     }
   });
 
   return (
     <mesh ref={meshRef} position={initialPos}>
-      <sphereGeometry args={[0.08, 32, 32]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={intensity} toneMapped={false} />
-      <pointLight color={color} intensity={15} distance={4} decay={2} />
+      <sphereGeometry args={[0.08, 16, 16]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={intensity} toneMapped={false} transparent opacity={isVisible ? 1 : 0} />
+      {/* NEVER unmount point lights dynamically in Three.js or it causes severe shader recompilation lag */}
+      <pointLight color={color} intensity={isVisible ? intensity : 0} distance={4} decay={2} />
     </mesh>
   );
 }
@@ -69,20 +71,26 @@ function FloatingOrbs() {
   ];
 
   // If no orbs are pressed, show a default set for aesthetics
-  const displayOrbs = currentOrbs.length === 0 ? ['Q', 'W', 'E'] : currentOrbs;
+  const isIdle = currentOrbs.length === 0;
+  const displayOrbs = isIdle ? ['Q', 'W', 'E'] : currentOrbs;
 
   return (
     <group ref={orbsRef} position={[0, 1.8, 0]}>
-      {displayOrbs.map((orb, idx) => (
-        <Orb
-          key={idx}
-          color={getOrbColor(orb)}
-          initialPos={positions[idx]}
-          speed={2.5 + idx * 0.2}
-          phase={idx * 2.4}
-          intensity={orb === 'W' ? 12 : 5}
-        />
-      ))}
+      {[0, 1, 2].map((idx) => {
+        const orb = displayOrbs[idx];
+        const isVisible = isIdle || idx < currentOrbs.length;
+        return (
+          <Orb
+            key={idx}
+            color={orb ? getOrbColor(orb) : '#000000'}
+            initialPos={positions[idx]}
+            speed={2.5 + idx * 0.2}
+            phase={idx * 2.4}
+            intensity={orb === 'W' ? 12 : 5}
+            isVisible={isVisible}
+          />
+        );
+      })}
     </group>
   );
 }
@@ -127,21 +135,36 @@ function Model() {
     ...fingerBones
   ];
 
+  const activeConfigurableBones = useRef<{ boneName: string, bone: THREE.Object3D, initialRot: THREE.Euler }[]>([]);
+  const capePhysicsBones = useRef<{ bone: THREE.Bone, initialRot: THREE.Euler, rowIdx: number }[]>([]);
+
   useEffect(() => {
+    activeConfigurableBones.current = [];
     configurableBones.forEach(boneName => {
       const bone = scene.getObjectByName(boneName);
       if (bone) {
         boneRefs.current[boneName] = bone;
         initialRotations.current[boneName] = bone.rotation.clone();
+        activeConfigurableBones.current.push({ boneName, bone, initialRot: initialRotations.current[boneName] });
       }
     });
 
     // Extract cape bones for programmatic inertia animations
+    capePhysicsBones.current = [];
     scene.traverse((obj) => {
       if (obj.type === 'Bone' && obj.name.startsWith('invoker_cape_')) {
         boneRefs.current[obj.name] = obj as THREE.Bone;
         if (!initialRotations.current[obj.name]) {
           initialRotations.current[obj.name] = obj.rotation.clone();
+        }
+        
+        const match = obj.name.match(/_R(\d)C/);
+        if (match) {
+          capePhysicsBones.current.push({
+            bone: obj as THREE.Bone,
+            initialRot: initialRotations.current[obj.name],
+            rowIdx: parseInt(match[1])
+          });
         }
       }
     });
@@ -223,10 +246,10 @@ function Model() {
     }
 
     // Apply other bone configurations
-    configurableBones.forEach(boneName => {
-      if (boneName === 'Head_0_026') return; // Handled above
-      const bone = boneRefs.current[boneName];
-      const initialRot = initialRotations.current[boneName];
+    for (let i = 0; i < activeConfigurableBones.current.length; i++) {
+      const { boneName, bone, initialRot } = activeConfigurableBones.current[i];
+      if (boneName === 'Head_0_026') continue; // Handled above
+      
       if (bone && initialRot) {
         let defaultOffsetX = 0;
         let defaultOffsetY = 0;
@@ -306,30 +329,22 @@ function Model() {
         bone.rotation.y = THREE.MathUtils.lerp(bone.rotation.y, initialRot.y + defaultOffsetY + configRot.y, currentLerp);
         bone.rotation.z = THREE.MathUtils.lerp(bone.rotation.z, initialRot.z + defaultOffsetZ + configRot.z, currentLerp);
       }
-    });
+    }
 
     // Apply Cape Inertia
-    Object.keys(boneRefs.current).forEach(boneName => {
-      if (boneName.startsWith('invoker_cape_')) {
-        const bone = boneRefs.current[boneName];
-        const initialRot = initialRotations.current[boneName];
-        const match = boneName.match(/_R(\d)C/);
-        
-        if (bone && initialRot && match) {
-          const rowIdx = parseInt(match[1]);
-          // The body floats with Math.sin(timeRef.current)
-          // We add a delay phase based on the row (further down the cape = more delay)
-          const delay = rowIdx * 0.3;
-          // Further down the cape = larger swinging amplitude
-          const amplitude = (rowIdx + 1) * 0.04;
-          
-          // X axis is typically the swing axis for the cape
-          const inertiaX = -Math.sin(timeRef.current - delay) * amplitude;
-          
-          bone.rotation.x = THREE.MathUtils.lerp(bone.rotation.x, initialRot.x + inertiaX, lerpFactor);
-        }
-      }
-    });
+    for (let i = 0; i < capePhysicsBones.current.length; i++) {
+      const { bone, initialRot, rowIdx } = capePhysicsBones.current[i];
+      // The body floats with Math.sin(timeRef.current)
+      // We add a delay phase based on the row (further down the cape = more delay)
+      const delay = rowIdx * 0.3;
+      // Further down the cape = larger swinging amplitude
+      const amplitude = (rowIdx + 1) * 0.04;
+      
+      // X axis is typically the swing axis for the cape
+      const inertiaX = -Math.sin(timeRef.current - delay) * amplitude;
+      
+      bone.rotation.x = THREE.MathUtils.lerp(bone.rotation.x, initialRot.x + inertiaX, lerpFactor);
+    }
 
     if (armAnim.current.arm !== 'none') {
       armAnim.current.time += delta;
@@ -358,6 +373,7 @@ export const ModelBackground: React.FC = () => {
         camera={{ position: [0, 0, 8], fov: 50 }}
         dpr={[1, 1.5]} // Limit pixel ratio to 1.5 to save massive GPU overhead on phones
         performance={{ min: 0.5 }} // Allow R3F to downgrade resolution if framerate drops
+        gl={{ powerPreference: "high-performance", antialias: false, stencil: false }}
       >
         <ambientLight intensity={0.4} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
@@ -367,7 +383,7 @@ export const ModelBackground: React.FC = () => {
           <Model />
           {/* Post-processing (Bloom) is notoriously laggy on mobile GPUs, so we turn it off for phones */}
           {!isMobile && (
-            <EffectComposer>
+            <EffectComposer multisampling={0}>
               <Bloom luminanceThreshold={1} mipmapBlur intensity={1.2} radius={0.5} />
             </EffectComposer>
           )}
