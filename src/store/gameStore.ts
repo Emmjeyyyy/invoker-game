@@ -59,6 +59,13 @@ interface GameState {
   resetKeybinds: () => void;
   setVolume: (volume: number) => void;
   setModelLoaded: (loaded: boolean) => void;
+  
+  // Custom 3D Model Pose Config
+  isHeadTrackingEnabled: boolean;
+  setHeadTrackingEnabled: (enabled: boolean) => void;
+  boneRotations: Record<string, { x: number, y: number, z: number }>;
+  setBoneRotation: (bone: string, axis: 'x' | 'y' | 'z', value: number) => void;
+  resetBoneRotations: () => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -85,6 +92,8 @@ export const useGameStore = create<GameState>()(
       gameOver: false,
       comboId: 0,
       currentComboSize: 1,
+      isHeadTrackingEnabled: true,
+      boneRotations: {},
   
   addOrb: (orb) => set((state) => {
     const newOrbs = [...state.currentOrbs, orb];
@@ -93,6 +102,20 @@ export const useGameStore = create<GameState>()(
     }
     return { currentOrbs: newOrbs };
   }),
+
+  setBoneRotation: (bone, axis, value) => set((state) => ({
+    boneRotations: {
+      ...state.boneRotations,
+      [bone]: {
+        ...(state.boneRotations[bone] || { x: 0, y: 0, z: 0 }),
+        [axis]: value
+      }
+    }
+  })),
+
+  setHeadTrackingEnabled: (enabled) => set({ isHeadTrackingEnabled: enabled }),
+
+  resetBoneRotations: () => set({ boneRotations: {} }),
   
   invoke: () => {
     const { currentOrbs } = get();

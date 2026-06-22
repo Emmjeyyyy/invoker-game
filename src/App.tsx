@@ -3,6 +3,7 @@ import { Layout } from './components/Layout';
 import { SettingsPanel } from './components/SettingsPanel';
 import { MainPanel } from './components/MainPanel';
 import { SpellsPanel } from './components/SpellsPanel';
+import { PoseConfig } from './components/PoseConfig';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useGameStore } from './store/gameStore';
 import { playSound, Howler } from './lib/audio';
@@ -53,6 +54,7 @@ function App() {
         <MainPanel onOpenSettings={() => setIsSettingsOpen(true)} />
       </div>
       {isSettingsOpen && <SettingsPanel onClose={() => setIsSettingsOpen(false)} />}
+      <PoseConfig />
     </Layout>
   );
 }

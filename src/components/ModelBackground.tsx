@@ -26,7 +26,7 @@ function Orb({ color, initialPos, speed, phase, intensity = 5 }: { color: string
       // Slight independent horizontal wobble to break the perfect circle
       meshRef.current.position.x = initialPos[0] + Math.cos(state.clock.elapsedTime * (speed * 0.8) + phase) * 0.05;
       meshRef.current.position.z = initialPos[2] + Math.sin(state.clock.elapsedTime * (speed * 0.9) + phase) * 0.05;
-      
+
       // Smoothly lerp scale back down to 1
       scaleRef.current = THREE.MathUtils.lerp(scaleRef.current, 1, delta * 15);
       meshRef.current.scale.set(scaleRef.current, scaleRef.current, scaleRef.current);
@@ -74,13 +74,13 @@ function FloatingOrbs() {
   return (
     <group ref={orbsRef} position={[0, 1.8, 0]}>
       {displayOrbs.map((orb, idx) => (
-        <Orb 
-          key={idx} 
-          color={getOrbColor(orb)} 
-          initialPos={positions[idx]} 
-          speed={2.5 + idx * 0.2} 
-          phase={idx * 2.4} 
-          intensity={orb === 'W' ? 12 : 5} 
+        <Orb
+          key={idx}
+          color={getOrbColor(orb)}
+          initialPos={positions[idx]}
+          speed={2.5 + idx * 0.2}
+          phase={idx * 2.4}
+          intensity={orb === 'W' ? 12 : 5}
         />
       ))}
     </group>
@@ -98,17 +98,39 @@ function Model() {
   }, [setModelLoaded]);
 
   // Continuously lerp towards the floating target position for a seamless entrance and float
-  const headBoneRef = useRef<THREE.Object3D | null>(null);
-  const headInitialRot = useRef<THREE.Euler | null>(null);
+  const boneRefs = useRef<Record<string, THREE.Object3D>>({});
+  const initialRotations = useRef<Record<string, THREE.Euler>>({});
   const mouseRef = useRef({ x: 0, y: 0 });
   const isActiveRef = useRef(true);
 
+  const currentOrbs = useGameStore((state) => state.currentOrbs);
+  const armAnim = useRef({ arm: 'none', time: 0 });
+
   useEffect(() => {
-    const head = scene.getObjectByName('Head_0_026');
-    if (head) {
-      headBoneRef.current = head;
-      headInitialRot.current = head.rotation.clone();
-    }
+    if (currentOrbs.length === 0) return;
+    armAnim.current.arm = Math.random() > 0.5 ? 'L' : 'R';
+    armAnim.current.time = 0;
+  }, [currentOrbs]);
+
+  const fingerBones = [
+    'mid_0_R_016', 'thumb_0_R_018', 'pinky_0_R_020', 'index_0_R_022', 'ring_0_R_024',
+    'ring_0_L_032', 'pinky_0_L_034', 'index_0_L_036', 'thumb_0_L_038', 'mid_0_L_040'
+  ];
+  const configurableBones = [
+    'Spine_1_011', 'Head_0_026', 
+    'bicep_L_029', 'elbow_L_030', 'wrist_L_031', 
+    'bicep_R_013', 'elbow_R_014', 'wrist_R_015',
+    ...fingerBones
+  ];
+
+  useEffect(() => {
+    configurableBones.forEach(boneName => {
+      const bone = scene.getObjectByName(boneName);
+      if (bone) {
+        boneRefs.current[boneName] = bone;
+        initialRotations.current[boneName] = bone.rotation.clone();
+      }
+    });
   }, [scene]);
 
   useEffect(() => {
@@ -117,7 +139,7 @@ function Model() {
       mouseRef.current.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouseRef.current.y = -(event.clientY / window.innerHeight) * 2 + 1;
     };
-    
+
     const handleMouseLeave = () => { isActiveRef.current = false; };
     const handleMouseEnter = () => { isActiveRef.current = true; };
     const handleBlur = () => { isActiveRef.current = false; };
@@ -128,7 +150,7 @@ function Model() {
     document.addEventListener('mouseenter', handleMouseEnter);
     window.addEventListener('blur', handleBlur);
     window.addEventListener('focus', handleFocus);
-    
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseleave', handleMouseLeave);
@@ -141,31 +163,39 @@ function Model() {
   useFrame((state, delta) => {
     // Accumulate time locally so it starts at 0 exactly when the model mounts
     timeRef.current += delta;
-    
+
     if (groupRef.current) {
       const targetY = -7.5 + Math.sin(timeRef.current) * 0.15;
-      
+
       // Wait for the UI entrance animations (1.2s) before rising up
       if (timeRef.current > 1.2) {
         // Smooth lerp factor for a majestic entrance, clamped to 1 to prevent alt-tab overshooting
         groupRef.current.position.y = THREE.MathUtils.lerp(
-          groupRef.current.position.y, 
-          targetY, 
+          groupRef.current.position.y,
+          targetY,
           Math.min(delta * 2.0, 1)
         );
       }
     }
 
-    // Head tracking the mouse cursor
-    if (headBoneRef.current && headInitialRot.current) {
-      // The default model pose has his head turned. We add an offset to face him forward.
-      const forwardOffsetX = 0.05; // Fine-tuned to center his head perfectly
-      
-      let targetRotX = headInitialRot.current.x + forwardOffsetX;
-      let targetRotY = headInitialRot.current.y;
-      let targetRotZ = headInitialRot.current.z; // keep Z fixed to avoid head tilt
+    const lerpFactor = Math.min(delta * 5, 1);
+    const boneRots = useGameStore.getState().boneRotations;
 
-      if (isActiveRef.current) {
+    // Head tracking the mouse cursor
+    const head = boneRefs.current['Head_0_026'];
+    const initialHead = initialRotations.current['Head_0_026'];
+
+    if (head && initialHead) {
+      // The default model pose has his head turned. We add an offset to face him forward.
+      const forwardOffsetX = 0; // Fine-tuned to center his head perfectly
+      const forwardOffsetY = 0.15; // Fine-tuned to tilt his head
+      const configRot = boneRots['Head_0_026'] || { x: 0, y: 0, z: 0 };
+
+      let targetRotX = initialHead.x + forwardOffsetX + configRot.x;
+      let targetRotY = initialHead.y + forwardOffsetY + configRot.y;
+      let targetRotZ = initialHead.z + configRot.z; // keep Z fixed to avoid head tilt
+
+      if (isActiveRef.current && useGameStore.getState().isHeadTrackingEnabled) {
         // The local axes for this specific Dota 2 rig are swapped!
         // Local X axis controls left/right (yaw).
         // Local Y axis controls up/down (pitch).
@@ -173,13 +203,102 @@ function Model() {
         targetRotY -= mouseRef.current.y * 0.4;
       }
 
-      // We clamp the lerp factor to 1 (Math.min(delta * 5, 1)) to prevent the rotation from exploding and "swirling" 
-      // if the browser provides a massive time delta when alt-tabbing back to the page.
-      const lerpFactor = Math.min(delta * 5, 1);
-      
-      headBoneRef.current.rotation.x = THREE.MathUtils.lerp(headBoneRef.current.rotation.x, targetRotX, lerpFactor);
-      headBoneRef.current.rotation.y = THREE.MathUtils.lerp(headBoneRef.current.rotation.y, targetRotY, lerpFactor);
-      headBoneRef.current.rotation.z = THREE.MathUtils.lerp(headBoneRef.current.rotation.z, targetRotZ, lerpFactor);
+      head.rotation.x = THREE.MathUtils.lerp(head.rotation.x, targetRotX, lerpFactor);
+      head.rotation.y = THREE.MathUtils.lerp(head.rotation.y, targetRotY, lerpFactor);
+      head.rotation.z = THREE.MathUtils.lerp(head.rotation.z, targetRotZ, lerpFactor);
+    }
+
+    // Apply other bone configurations
+    configurableBones.forEach(boneName => {
+      if (boneName === 'Head_0_026') return; // Handled above
+      const bone = boneRefs.current[boneName];
+      const initialRot = initialRotations.current[boneName];
+      if (bone && initialRot) {
+        let defaultOffsetX = 0;
+        let defaultOffsetY = 0;
+        let defaultOffsetZ = 0;
+        let currentLerp = lerpFactor;
+
+        // Apply custom default pose adjustments requested by the user
+        if (boneName === 'bicep_L_029' || boneName === 'bicep_R_013') {
+          defaultOffsetX = -0.65;
+
+          // Add floating inertia to arms: opposite of body's vertical sine wave
+          // The body height is driven by Math.sin(timeRef.current)
+          // We add +Math.sin(timeRef.current) because a positive X rotation lowers the arms on this rig
+          defaultOffsetX += Math.sin(timeRef.current) * 0.15;
+
+          // Add lifting animation on orb cast
+          if (armAnim.current.arm !== 'none') {
+            const isLeft = boneName === 'bicep_L_029' && armAnim.current.arm === 'L';
+            const isRight = boneName === 'bicep_R_013' && armAnim.current.arm === 'R';
+
+            if (isLeft || isRight) {
+              const t = armAnim.current.time;
+              const duration = 0.12; // 120ms lift
+              if (t <= duration) {
+                // Math.sin(0 to PI) goes 0 -> 1 -> 0
+                // Negative offset lifts the arm
+                const bump = -Math.sin((t / duration) * Math.PI) * 0.3;
+                defaultOffsetX += bump;
+                currentLerp = Math.min(delta * 25, 1);
+              }
+            }
+          }
+        }
+
+        // Add a relaxed bend to the wrists by default
+        if (boneName === 'wrist_L_031' || boneName === 'wrist_R_015') {
+          defaultOffsetX = -0.4; // Bend wrist slightly down
+          
+          // Add wrist flick animation on orb cast
+          if (armAnim.current.arm !== 'none') {
+            const isLeftWrist = boneName === 'wrist_L_031' && armAnim.current.arm === 'L';
+            const isRightWrist = boneName === 'wrist_R_015' && armAnim.current.arm === 'R';
+
+            if (isLeftWrist || isRightWrist) {
+              const t = armAnim.current.time;
+              const duration = 0.12; // 120ms flick
+              if (t <= duration) {
+                // Negative Z bends the wrist outward away from the body
+                const bump = -Math.sin((t / duration) * Math.PI) * 0.6;
+                defaultOffsetZ += bump;
+                currentLerp = Math.min(delta * 25, 1);
+              }
+            }
+          }
+        }
+
+        // Add finger opening animation on orb cast
+        const isFinger = boneName.includes('_0_L_') || boneName.includes('_0_R_');
+        if (isFinger && armAnim.current.arm !== 'none') {
+          const isLeftFinger = boneName.includes('_L_') && armAnim.current.arm === 'L';
+          const isRightFinger = boneName.includes('_R_') && armAnim.current.arm === 'R';
+          
+          if (isLeftFinger || isRightFinger) {
+            const t = armAnim.current.time;
+            const duration = 0.12; // 120ms flick
+            if (t <= duration) {
+               // Negative Z axis generally uncurls the fingers outwards on this rig
+               const bump = -Math.sin((t / duration) * Math.PI) * 0.8; 
+               defaultOffsetZ += bump; 
+               currentLerp = Math.min(delta * 25, 1);
+            }
+          }
+        }
+
+        const configRot = boneRots[boneName] || { x: 0, y: 0, z: 0 };
+        bone.rotation.x = THREE.MathUtils.lerp(bone.rotation.x, initialRot.x + defaultOffsetX + configRot.x, currentLerp);
+        bone.rotation.y = THREE.MathUtils.lerp(bone.rotation.y, initialRot.y + defaultOffsetY + configRot.y, currentLerp);
+        bone.rotation.z = THREE.MathUtils.lerp(bone.rotation.z, initialRot.z + defaultOffsetZ + configRot.z, currentLerp);
+      }
+    });
+
+    if (armAnim.current.arm !== 'none') {
+      armAnim.current.time += delta;
+      if (armAnim.current.time > 0.12) {
+        armAnim.current.arm = 'none';
+      }
     }
   });
 
@@ -198,7 +317,7 @@ export const ModelBackground: React.FC = () => {
 
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden rounded-xl pointer-events-none">
-      <Canvas 
+      <Canvas
         camera={{ position: [0, 0, 8], fov: 50 }}
         dpr={[1, 1.5]} // Limit pixel ratio to 1.5 to save massive GPU overhead on phones
         performance={{ min: 0.5 }} // Allow R3F to downgrade resolution if framerate drops

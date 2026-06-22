@@ -8,11 +8,12 @@ interface SettingsPanelProps {
 }
 
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
-  const { keybinds, setKeybinds, volume, setVolume } = useGameStore();
+  const { keybinds, setKeybinds, volume, setVolume, isHeadTrackingEnabled, setHeadTrackingEnabled } = useGameStore();
   const [listeningFor, setListeningFor] = useState<keyof Keybinds | null>(null);
   const [pendingKeybind, setPendingKeybind] = useState<string | null>(null);
   const [localKeybinds, setLocalKeybinds] = useState<Keybinds>(keybinds);
   const [localVolume, setLocalVolume] = useState<number>(volume);
+  const [localHeadTracking, setLocalHeadTracking] = useState<boolean>(isHeadTrackingEnabled);
   
   // Keep track of the real global volume to revert to if cancelled
   const globalVolumeRef = useRef(volume);
@@ -54,6 +55,13 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
     { key: 'F', name: 'Spell 2', color: 'text-gray-400', img: '/asset/icons/invoke skills/default skills/no-spell.png' },
     { key: 'R', name: 'Invoke', color: 'text-textGold', img: '/asset/icons/QWE/Invoke_icon.png' },
   ];
+
+  const handleSave = () => {
+    setKeybinds(localKeybinds);
+    setVolume(localVolume);
+    setHeadTrackingEnabled(localHeadTracking);
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
@@ -118,10 +126,18 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
               className="w-full h-1 bg-black rounded-lg appearance-none cursor-pointer accent-textGold"
             />
           </div>
+
+          <div className="flex justify-between items-center cursor-pointer" onClick={() => setLocalHeadTracking(!localHeadTracking)}>
+            <span className="text-xs tracking-widest text-textMuted uppercase font-bold">Dynamic Head Tracking</span>
+            <div className={`w-10 h-6 flex items-center rounded-full p-1 transition-colors ${localHeadTracking ? 'bg-textGold' : 'bg-slate-700'}`}>
+              <div className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${localHeadTracking ? 'translate-x-4' : 'translate-x-0'}`} />
+            </div>
+          </div>
           
           {(() => {
             const hasChanges = 
               localVolume !== volume ||
+              localHeadTracking !== isHeadTrackingEnabled ||
               localKeybinds.Q !== keybinds.Q ||
               localKeybinds.W !== keybinds.W ||
               localKeybinds.E !== keybinds.E ||
@@ -140,9 +156,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
                 <button 
                   onClick={() => {
                     if (!hasChanges) return;
-                    setKeybinds(localKeybinds);
-                    setVolume(localVolume);
-                    onClose();
+                    handleSave();
                   }}
                   disabled={!hasChanges}
                   className={`flex-1 py-2 border rounded text-xs tracking-wider uppercase font-bold transition-colors ${hasChanges ? 'bg-textGold text-black border-textGold hover:bg-yellow-500' : 'border-panelBorder/30 text-textMuted/50 cursor-not-allowed'}`}
