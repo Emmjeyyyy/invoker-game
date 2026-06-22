@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useGameStore } from '../../store/gameStore';
 
 interface MainMenuProps {
@@ -9,18 +9,40 @@ interface MainMenuProps {
 export const MainMenu: React.FC<MainMenuProps> = ({ showDifficultySelect, setShowDifficultySelect }) => {
   const { startGame, isModelLoaded } = useGameStore();
 
+  const gradientStyle = useMemo(() => {
+    return `linear-gradient(to right, #4facfe, #d53e90, #ff8c00)`;
+  }, []);
+
   return (
     <div className="flex flex-col items-center justify-center w-full h-full flex-1 mt-8">
       {!showDifficultySelect && (
-        <h1 
-          className={`text-5xl lg:text-7xl font-victory mb-12 pt-4 pb-2 leading-normal tracking-widest bg-linear-to-b from-[#ffffe6] via-[#ffd700] to-[#b8860b] text-transparent bg-clip-text ${isModelLoaded ? 'animate-fade-in-down' : 'opacity-0'}`}
-          style={{
-            filter: 'drop-shadow(0px 1px 0px #996b00) drop-shadow(0px 2px 0px #7a5500) drop-shadow(0px 3px 0px #5c4000) drop-shadow(0px 4px 0px #3d2b00) drop-shadow(0px 10px 20px rgba(0,0,0,0.9))',
-            WebkitTextStroke: '1px rgba(255,255,255,0.2)'
-          }}
-        >
-          INVOKER GAME
-        </h1>
+        <div className={`relative mb-12 ${isModelLoaded ? 'animate-fade-in-down' : 'opacity-0'}`}>
+          {/* Dark duplicate — same gradient but darker, offset down for 3D depth */}
+          {[6, 5, 4, 3, 2, 1].map((offset) => (
+            <span
+              key={offset}
+              aria-hidden="true"
+              className="absolute top-0 left-0 w-full text-5xl lg:text-7xl font-victory pt-4 pb-2 leading-normal tracking-widest text-transparent bg-clip-text pointer-events-none text-center"
+              style={{
+                backgroundImage: `linear-gradient(to right, #1a4a6a, #4a1060, #7a3000)`,
+                transform: `translateY(${offset}px)`,
+              }}
+            >
+              INVOKER GAME
+            </span>
+          ))}
+          {/* Front text — bright gradient */}
+          <h1
+            className="text-5xl lg:text-7xl font-victory pt-4 pb-2 leading-normal tracking-widest text-transparent bg-clip-text relative text-center"
+            style={{
+              backgroundImage: gradientStyle,
+              WebkitTextStroke: '1px rgba(255,255,255,0.2)',
+              filter: 'drop-shadow(0px 10px 24px rgba(0,0,0,0.95))',
+            }}
+          >
+            INVOKER GAME
+          </h1>
+        </div>
       )}
       {!showDifficultySelect ? (
         <div className={`flex flex-col gap-6 w-full max-w-md ${isModelLoaded ? 'opacity-0 animate-fade-in-up' : 'opacity-0'}`}>
