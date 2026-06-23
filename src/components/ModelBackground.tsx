@@ -471,7 +471,7 @@ function Model() {
 
 useGLTF.preload(MODEL_URL);
 
-export const ModelBackground: React.FC = () => {
+export const ModelBackground: React.FC<{ showGizmo?: boolean }> = ({ showGizmo = false }) => {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const setModelLoaded = useGameStore((state) => state.setModelLoaded);
 
@@ -495,7 +495,7 @@ export const ModelBackground: React.FC = () => {
 
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden rounded-xl pointer-events-none">
-      <ModelRotationWidget />
+      {showGizmo && <ModelRotationWidget />}
       <Canvas
         camera={{ position: [0, 0, 8], fov: 50 }}
         dpr={[1, 1.5]} // Limit pixel ratio to 1.5 to save massive GPU overhead on phones
