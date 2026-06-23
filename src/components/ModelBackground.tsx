@@ -239,8 +239,10 @@ function Model() {
         // The local axes for this specific Dota 2 rig are swapped!
         // Local X axis controls left/right (yaw).
         // Local Y axis controls up/down (pitch).
+        // Offset the origin vertically so his "look straight" point is on his face
+        const faceOffsetY = 0.4; // His face is in the upper half of the screen
         targetRotX += mouseRef.current.x * 0.6;
-        targetRotY -= mouseRef.current.y * 0.4;
+        targetRotY -= (mouseRef.current.y - faceOffsetY) * 0.4;
       }
 
       head.rotation.x = THREE.MathUtils.lerp(head.rotation.x, targetRotX, lerpFactor);
