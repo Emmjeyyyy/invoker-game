@@ -3,7 +3,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
-import { Move, RotateCcw } from 'lucide-react';
+import { Move, Home } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 
 const MODEL_URL = '/asset/icons/3d%20model/invoker_dota_2.glb';
@@ -79,7 +79,7 @@ const ModelRotationWidget = () => {
         className="bg-black/50 border border-white/20 w-12 h-12 flex items-center justify-center rounded-full pointer-events-auto hover:bg-white/10 transition-colors text-white/50 hover:text-white backdrop-blur-md"
         title="Reset Camera & Zoom"
       >
-        <RotateCcw size={20} />
+        <Home size={20} />
       </button>
     </div>
   );

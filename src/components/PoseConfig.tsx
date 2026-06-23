@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SlidersHorizontal, X, RotateCcw, Plus, Minus, Copy, Check, ChevronDown, ChevronUp, Undo, Redo } from 'lucide-react';
+import { SlidersHorizontal, X, Plus, Minus, Copy, Check, ChevronDown, ChevronUp, Undo, Redo, Eraser, RefreshCw } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 
 const BONES = [
@@ -150,7 +150,7 @@ const BoneGroupSection = ({
                       className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-red-400 transition-colors"
                       title={`Reset ${axis.toUpperCase()} to default`}
                     >
-                      <RotateCcw size={12} />
+                      <Eraser size={12} />
                     </button>
                   </div>
                 );
@@ -306,6 +306,14 @@ export const PoseConfig: React.FC<{ alwaysOpen?: boolean }> = ({ alwaysOpen = fa
             <h2 className="text-lg font-bold text-slate-200">Pose Configurator</h2>
             <div className="flex gap-2">
               <button
+                onClick={() => window.location.reload()}
+                className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors text-slate-300 flex items-center gap-2 text-sm font-medium"
+                title="Refresh Page"
+              >
+                <RefreshCw size={16} />
+              </button>
+              <div className="w-px bg-white/10 mx-1"></div>
+              <button
                 onClick={handleCopy}
                 className="p-2 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/40 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
               >
@@ -343,7 +351,7 @@ export const PoseConfig: React.FC<{ alwaysOpen?: boolean }> = ({ alwaysOpen = fa
                 className="p-2 bg-red-900/40 text-red-400 hover:bg-red-800/60 rounded-lg transition-colors flex items-center gap-1 text-sm font-medium"
                 title="Reset Everything"
               >
-                <RotateCcw size={16} />
+                <Eraser size={16} />
               </button>
             </div>
           </div>
@@ -461,7 +469,7 @@ export const PoseConfig: React.FC<{ alwaysOpen?: boolean }> = ({ alwaysOpen = fa
                             className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-red-400 transition-colors"
                             title={`Reset Radius to default`}
                           >
-                            <RotateCcw size={12} />
+                            <Eraser size={12} />
                           </button>
                         </div>
                       </div>
@@ -506,7 +514,7 @@ export const PoseConfig: React.FC<{ alwaysOpen?: boolean }> = ({ alwaysOpen = fa
                             className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-red-400 transition-colors"
                             title={`Reset Speed to default`}
                           >
-                            <RotateCcw size={12} />
+                            <Eraser size={12} />
                           </button>
                         </div>
                       </div>
@@ -552,7 +560,7 @@ export const PoseConfig: React.FC<{ alwaysOpen?: boolean }> = ({ alwaysOpen = fa
                               className="p-1 hover:bg-white/10 rounded text-slate-400 hover:text-red-400 transition-colors"
                               title={`Reset ${axis.toUpperCase()} to default`}
                             >
-                              <RotateCcw size={12} />
+                              <Eraser size={12} />
                             </button>
                           </div>
                         ))}
