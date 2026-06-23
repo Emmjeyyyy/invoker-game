@@ -82,7 +82,7 @@ interface GameState {
 export const useGameStore = create<GameState>()(
   persist(
     (set, get) => ({
-      currentOrbs: ['Q', 'W', 'E'],
+      currentOrbs: [],
       targetSpells: [getRandomSpell()],
       slotD: null,
       slotF: null,
@@ -215,7 +215,7 @@ export const useGameStore = create<GameState>()(
     mode,
     difficulty,
     targetSpells: [getRandomSpell()],
-    currentOrbs: ['Q', 'W', 'E'],
+    currentOrbs: [],
     slotD: null,
     slotF: null,
     correctCount: 0,
@@ -228,7 +228,7 @@ export const useGameStore = create<GameState>()(
     currentComboSize: 1,
   }),
   
-  endGame: () => set({ isStarted: false, gameOver: false, targetSpells: [getRandomSpell()], currentOrbs: ['Q', 'W', 'E'], slotD: null, slotF: null }),
+  endGame: () => set({ isStarted: false, gameOver: false, targetSpells: [getRandomSpell()], currentOrbs: [], slotD: null, slotF: null }),
   
   failSpell: (changeSpell = true) => {
     playSound('lifeLost');
@@ -266,7 +266,7 @@ export const useGameStore = create<GameState>()(
       }
     }
   },
-  resetOrbs: () => set({ currentOrbs: ['Q', 'W', 'E'] }),
+  resetOrbs: () => set({ currentOrbs: [] }),
   setTargetSpells: (spells) => set({ targetSpells: spells }),
   setTimeRemaining: (time) => set({ timeRemaining: time }),
   setTimeElapsed: (time) => set({ timeElapsed: time }),
