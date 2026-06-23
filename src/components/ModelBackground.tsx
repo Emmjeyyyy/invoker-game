@@ -369,6 +369,17 @@ useGLTF.preload(MODEL_URL);
 
 export const ModelBackground: React.FC = () => {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const setModelLoaded = useGameStore((state) => state.setModelLoaded);
+
+  useEffect(() => {
+    if (isMobile) {
+      setModelLoaded(true);
+    }
+  }, [isMobile, setModelLoaded]);
+
+  if (isMobile) {
+    return <div className="absolute inset-0 -z-10 overflow-hidden rounded-xl pointer-events-none bg-slate-950" />;
+  }
 
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden rounded-xl pointer-events-none">
