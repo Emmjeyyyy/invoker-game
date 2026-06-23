@@ -71,12 +71,39 @@ interface GameState {
   setVolume: (volume: number) => void;
   setModelLoaded: (loaded: boolean) => void;
   
-  // Custom 3D Model Pose Config
   isHeadTrackingEnabled: boolean;
   setHeadTrackingEnabled: (enabled: boolean) => void;
   boneRotations: Record<string, { x: number, y: number, z: number }>;
+  pastBoneRotations: Record<string, { x: number, y: number, z: number }>[];
+  futureBoneRotations: Record<string, { x: number, y: number, z: number }>[];
   setBoneRotation: (bone: string, axis: 'x' | 'y' | 'z', value: number) => void;
+  commitBoneRotations: () => void;
+  undoBoneRotations: () => void;
+  redoBoneRotations: () => void;
   resetBoneRotations: () => void;
+  applyBoneRotations: (rotations: Record<string, { x: number, y: number, z: number }>) => void;
+
+  // Environment & Orb Config
+  isFloatingEnabled: boolean;
+  setFloatingEnabled: (enabled: boolean) => void;
+  isOrbFloatingEnabled: boolean;
+  setOrbFloatingEnabled: (enabled: boolean) => void;
+  areOrbsEnabled: boolean;
+  setOrbsEnabled: (enabled: boolean) => void;
+  isModelVisible: boolean;
+  setModelVisible: (visible: boolean) => void;
+  orbGroupPosition: { x: number, y: number, z: number };
+  setOrbGroupPosition: (axis: 'x' | 'y' | 'z', value: number) => void;
+  orbMovementPreset: string;
+  setOrbMovementPreset: (preset: string) => void;
+  orbRadius: number;
+  setOrbRadius: (radius: number) => void;
+  orbSpeed: number;
+  setOrbSpeed: (speed: number) => void;
+  modelRotation: { x: number, y: number };
+  setModelRotation: (rotation: { x: number, y: number }) => void;
+  modelScale: number;
+  setModelScale: (scale: number) => void;
 }
 
 export const useGameStore = create<GameState>()(
@@ -105,6 +132,18 @@ export const useGameStore = create<GameState>()(
       currentComboSize: 1,
       isHeadTrackingEnabled: true,
       boneRotations: {},
+      pastBoneRotations: [],
+      futureBoneRotations: [],
+      isFloatingEnabled: true,
+      isOrbFloatingEnabled: true,
+      areOrbsEnabled: true,
+      isModelVisible: true,
+      orbGroupPosition: { x: 0, y: 1.8, z: 0 },
+      orbMovementPreset: 'orbit_horizontal',
+      orbRadius: 1,
+      orbSpeed: 1,
+      modelRotation: { x: 0, y: 0 },
+      modelScale: 4.5,
   
   addOrb: (orb) => set((state) => {
     const newOrbs = [...state.currentOrbs, orb];
@@ -126,7 +165,57 @@ export const useGameStore = create<GameState>()(
 
   setHeadTrackingEnabled: (enabled) => set({ isHeadTrackingEnabled: enabled }),
 
-  resetBoneRotations: () => set({ boneRotations: {} }),
+  commitBoneRotations: () => set((state) => ({
+    pastBoneRotations: [...state.pastBoneRotations, state.boneRotations].slice(-50),
+    futureBoneRotations: []
+  })),
+
+  undoBoneRotations: () => set((state) => {
+    if (state.pastBoneRotations.length === 0) return state;
+    const previous = state.pastBoneRotations[state.pastBoneRotations.length - 1];
+    const newPast = state.pastBoneRotations.slice(0, -1);
+    return {
+      pastBoneRotations: newPast,
+      futureBoneRotations: [state.boneRotations, ...state.futureBoneRotations],
+      boneRotations: previous,
+    };
+  }),
+
+  redoBoneRotations: () => set((state) => {
+    if (state.futureBoneRotations.length === 0) return state;
+    const next = state.futureBoneRotations[0];
+    const newFuture = state.futureBoneRotations.slice(1);
+    return {
+      pastBoneRotations: [...state.pastBoneRotations, state.boneRotations],
+      futureBoneRotations: newFuture,
+      boneRotations: next,
+    };
+  }),
+
+  resetBoneRotations: () => set((state) => ({
+    pastBoneRotations: [...state.pastBoneRotations, state.boneRotations].slice(-50),
+    futureBoneRotations: [],
+    boneRotations: {}
+  })),
+  
+  applyBoneRotations: (rotations) => set((state) => ({
+    pastBoneRotations: [...state.pastBoneRotations, state.boneRotations].slice(-50),
+    futureBoneRotations: [],
+    boneRotations: rotations
+  })),
+
+  setFloatingEnabled: (enabled) => set({ isFloatingEnabled: enabled }),
+  setOrbFloatingEnabled: (enabled) => set({ isOrbFloatingEnabled: enabled }),
+  setOrbsEnabled: (enabled) => set({ areOrbsEnabled: enabled }),
+  setModelVisible: (visible) => set({ isModelVisible: visible }),
+  setOrbGroupPosition: (axis, value) => set((state) => ({
+    orbGroupPosition: { ...state.orbGroupPosition, [axis]: value }
+  })),
+  setOrbMovementPreset: (preset) => set({ orbMovementPreset: preset }),
+  setOrbRadius: (radius) => set({ orbRadius: radius }),
+  setOrbSpeed: (speed) => set({ orbSpeed: speed }),
+  setModelRotation: (rotation) => set({ modelRotation: rotation }),
+  setModelScale: (scale) => set({ modelScale: scale }),
   
   invoke: () => {
     const { currentOrbs } = get();
@@ -284,6 +373,14 @@ export const useGameStore = create<GameState>()(
     incorrectCount: state.incorrectCount,
     streak: state.streak,
     keybinds: state.keybinds,
-    volume: state.volume
+    volume: state.volume,
+    isFloatingEnabled: state.isFloatingEnabled,
+    isOrbFloatingEnabled: state.isOrbFloatingEnabled,
+    areOrbsEnabled: state.areOrbsEnabled,
+    isModelVisible: state.isModelVisible,
+    orbGroupPosition: state.orbGroupPosition,
+    orbMovementPreset: state.orbMovementPreset,
+    orbRadius: state.orbRadius,
+    orbSpeed: state.orbSpeed,
   })
 }));

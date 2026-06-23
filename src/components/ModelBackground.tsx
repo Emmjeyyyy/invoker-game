@@ -3,9 +3,87 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
+import { Move, RotateCcw } from 'lucide-react';
 import { useGameStore } from '../store/gameStore';
 
 const MODEL_URL = '/asset/icons/3d%20model/invoker_dota_2.glb';
+
+const ModelRotationWidget = () => {
+  const isDragging = useRef(false);
+  const lastPos = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!isDragging.current) return;
+      const deltaX = e.clientX - lastPos.current.x;
+      const deltaY = e.clientY - lastPos.current.y;
+      
+      const currentRot = useGameStore.getState().modelRotation;
+      useGameStore.getState().setModelRotation({
+        x: currentRot.x + deltaY * 0.01,
+        y: currentRot.y + deltaX * 0.01,
+      });
+      
+      lastPos.current = { x: e.clientX, y: e.clientY };
+    };
+    
+    const handlePointerUp = () => {
+      if (isDragging.current) {
+        isDragging.current = false;
+        document.body.style.cursor = 'default';
+      }
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      if (!isDragging.current) return;
+      e.preventDefault();
+      
+      const zoomSpeed = 0.005;
+      const currentScale = useGameStore.getState().modelScale;
+      // Scroll up -> Zoom in, Scroll down -> Zoom out
+      const newScale = Math.max(1, Math.min(15, currentScale - e.deltaY * zoomSpeed));
+      useGameStore.getState().setModelScale(newScale);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
+  return (
+    <div className="absolute top-1/2 left-8 -translate-y-1/2 flex flex-col gap-3 z-50">
+      <div 
+        className="bg-black/50 border border-white/20 w-12 h-12 flex items-center justify-center rounded-full cursor-move pointer-events-auto hover:bg-white/10 transition-colors text-white/50 hover:text-white backdrop-blur-md"
+        onPointerDown={(e) => {
+          isDragging.current = true;
+          lastPos.current = { x: e.clientX, y: e.clientY };
+          document.body.style.cursor = 'move';
+          e.preventDefault();
+        }}
+        title="Drag to rotate, scroll to zoom"
+      >
+        <Move size={22} />
+      </div>
+      
+      <button 
+        onClick={() => {
+          useGameStore.getState().setModelRotation({ x: 0, y: 0 });
+          useGameStore.getState().setModelScale(4.5);
+        }}
+        className="bg-black/50 border border-white/20 w-12 h-12 flex items-center justify-center rounded-full pointer-events-auto hover:bg-white/10 transition-colors text-white/50 hover:text-white backdrop-blur-md"
+        title="Reset Camera & Zoom"
+      >
+        <RotateCcw size={20} />
+      </button>
+    </div>
+  );
+};
 
 function Orb({ color, initialPos, speed, phase, intensity = 5, isVisible = true }: { color: string, initialPos: [number, number, number], speed: number, phase: number, intensity?: number, isVisible?: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -21,11 +99,12 @@ function Orb({ color, initialPos, speed, phase, intensity = 5, isVisible = true 
 
   useFrame((state, delta) => {
     if (meshRef.current) {
+      const isFloating = useGameStore.getState().isOrbFloatingEnabled;
       // Independent vertical bobbing
-      meshRef.current.position.y = initialPos[1] + Math.sin(state.clock.elapsedTime * speed + phase) * 0.2;
+      meshRef.current.position.y = initialPos[1] + (isFloating ? Math.sin(state.clock.elapsedTime * speed + phase) * 0.2 : 0);
       // Slight independent horizontal wobble to break the perfect circle
-      meshRef.current.position.x = initialPos[0] + Math.cos(state.clock.elapsedTime * (speed * 0.8) + phase) * 0.05;
-      meshRef.current.position.z = initialPos[2] + Math.sin(state.clock.elapsedTime * (speed * 0.9) + phase) * 0.05;
+      meshRef.current.position.x = initialPos[0] + (isFloating ? Math.cos(state.clock.elapsedTime * (speed * 0.8) + phase) * 0.05 : 0);
+      meshRef.current.position.z = initialPos[2] + (isFloating ? Math.sin(state.clock.elapsedTime * (speed * 0.9) + phase) * 0.05 : 0);
 
       // Smoothly lerp scale towards target (1 if visible, 0 if hidden)
       const targetScale = isVisible ? 1 : 0;
@@ -46,12 +125,16 @@ function Orb({ color, initialPos, speed, phase, intensity = 5, isVisible = true 
 
 function FloatingOrbs() {
   const orbsRef = useRef<THREE.Group>(null);
-  const currentOrbs = useGameStore(state => state.currentOrbs);
+  const { currentOrbs, areOrbsEnabled, orbGroupPosition, orbMovementPreset, orbRadius, orbSpeed } = useGameStore();
 
   useFrame((state) => {
     if (orbsRef.current) {
-      // Slowly orbit the entire group around the Y axis
-      orbsRef.current.rotation.y = state.clock.elapsedTime * 0.8;
+      if (orbMovementPreset === 'orbit_horizontal') {
+        orbsRef.current.rotation.set(0, state.clock.elapsedTime * 0.8 * orbSpeed, 0);
+      } else if (orbMovementPreset === 'spin_vertical_behind') {
+        // Tilt 90 degrees on X to stand the ring up vertically, then spin on local Y
+        orbsRef.current.rotation.set(Math.PI / 2, state.clock.elapsedTime * -1.2 * orbSpeed, 0);
+      }
     }
   });
 
@@ -74,16 +157,29 @@ function FloatingOrbs() {
   const isIdle = currentOrbs.length === 0;
   const displayOrbs = isIdle ? ['Q', 'W', 'E'] : currentOrbs;
 
+  if (!areOrbsEnabled) return null;
+
+  // Apply a base offset so the vertical halo is automatically pushed behind him
+  const posZ = orbMovementPreset === 'spin_vertical_behind' 
+    ? orbGroupPosition.z - 1.5 
+    : orbGroupPosition.z;
+
   return (
-    <group ref={orbsRef} position={[0, 1.8, 0]}>
+    <group ref={orbsRef} position={[orbGroupPosition.x, orbGroupPosition.y, posZ]}>
       {[0, 1, 2].map((idx) => {
         const orb = displayOrbs[idx];
         const isVisible = isIdle || idx < currentOrbs.length;
+        const pos = positions[idx];
+        const scaledPos: [number, number, number] = [
+          pos[0] * orbRadius,
+          pos[1] * orbRadius,
+          pos[2] * orbRadius
+        ];
         return (
           <Orb
             key={idx}
             color={orb ? getOrbColor(orb) : '#000000'}
-            initialPos={positions[idx]}
+            initialPos={scaledPos}
             speed={2.5 + idx * 0.2}
             phase={idx * 2.4}
             intensity={orb === 'W' ? 12 : 5}
@@ -113,6 +209,9 @@ function Model() {
   const isActiveRef = useRef(true);
 
   const currentOrbs = useGameStore((state) => state.currentOrbs);
+  const isModelVisible = useGameStore((state) => state.isModelVisible);
+  const modelRotation = useGameStore((state) => state.modelRotation);
+  const modelScale = useGameStore((state) => state.modelScale);
   const armAnim = useRef({ arm: 'none', time: 0 });
 
   useEffect(() => {
@@ -205,7 +304,8 @@ function Model() {
     timeRef.current += delta;
 
     if (groupRef.current) {
-      const targetY = -7.5 + Math.sin(timeRef.current) * 0.15;
+      const isFloating = useGameStore.getState().isFloatingEnabled;
+      const targetY = -7.5 + (isFloating ? Math.sin(timeRef.current) * 0.15 : 0);
 
       // Wait for the UI entrance animations (1.2s) before rising up
       if (timeRef.current > 1.2) {
@@ -268,7 +368,9 @@ function Model() {
           // Add floating inertia to arms: opposite of body's vertical sine wave
           // The body height is driven by Math.sin(timeRef.current)
           // We add +Math.sin(timeRef.current) because a positive X rotation lowers the arms on this rig
-          defaultOffsetX += Math.sin(timeRef.current) * 0.15;
+          if (useGameStore.getState().isFloatingEnabled) {
+            defaultOffsetX += Math.sin(timeRef.current) * 0.15;
+          }
 
           // Add lifting animation on orb cast
           if (armAnim.current.arm !== 'none') {
@@ -346,7 +448,7 @@ function Model() {
       const amplitude = (rowIdx + 1) * 0.04;
       
       // X axis is typically the swing axis for the cape
-      const inertiaX = -Math.sin(timeRef.current - delay) * amplitude;
+      const inertiaX = useGameStore.getState().isFloatingEnabled ? -Math.sin(timeRef.current - delay) * amplitude : 0;
       
       bone.rotation.x = THREE.MathUtils.lerp(bone.rotation.x, initialRot.x + inertiaX, lerpFactor);
     }
@@ -360,8 +462,8 @@ function Model() {
   });
 
   return (
-    <group ref={groupRef} position={[0, -25, 0]} rotation={[0, 0, 0]} scale={[4.5, 4.5, 4.5]}>
-      <primitive object={scene} />
+    <group ref={groupRef} position={[0, -25, 0]} rotation={[modelRotation.x, modelRotation.y, 0]} scale={[modelScale, modelScale, modelScale]}>
+      {isModelVisible && <primitive object={scene} />}
       <FloatingOrbs />
     </group>
   );
@@ -393,6 +495,7 @@ export const ModelBackground: React.FC = () => {
 
   return (
     <div className="absolute inset-0 -z-10 overflow-hidden rounded-xl pointer-events-none">
+      <ModelRotationWidget />
       <Canvas
         camera={{ position: [0, 0, 8], fov: 50 }}
         dpr={[1, 1.5]} // Limit pixel ratio to 1.5 to save massive GPU overhead on phones
