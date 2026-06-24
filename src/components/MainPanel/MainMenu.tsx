@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useGameStore } from '../../store/gameStore';
 
 interface MainMenuProps {
@@ -15,6 +15,20 @@ export const MainMenu: React.FC<MainMenuProps> = ({
   setShowTimeTrialSelect
 }) => {
   const { startGame, isModelLoaded } = useGameStore();
+
+  useEffect(() => {
+    const imagesToPreload = [
+      '/asset/bgs/kidvoker3.png',
+      '/asset/bgs/invoker.jpg',
+      '/asset/bgs/invoker4.jpg',
+      '/asset/bgs/invoker3.png',
+      '/asset/bgs/invoker2.png',
+    ];
+    imagesToPreload.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
 
   const gradientStyle = useMemo(() => {
     return `linear-gradient(to right, #4facfe, #d53e90, #ff8c00)`;
